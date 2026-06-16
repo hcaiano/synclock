@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Synclock — UI mockup</title>
+<style>
+  :root{
+    --bg: rgba(34,36,42,0.78);
+    --surface: #2c2f36;
+    --surface-2: #34373f;
+    --surface-hover: #3a3e47;
+    --ink: #F2F4F0;
+    --ink-2: #b9bdc4;
+    --ink-muted: #868b94;
+    --accent: #2F6BFF;
+    --accent-soft: rgba(47,107,255,0.16);
+    --amber: #E2A23B;
+    --hairline: rgba(255,255,255,0.08);
+    --hairline-strong: rgba(255,255,255,0.12);
+    --radius: 12px;
+    --font: -apple-system,"SF Pro Text","SF Pro Display","Helvetica Neue",system-ui,sans-serif;
+    --shadow: 0 18px 50px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.3);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--font);
+    /* studio-desk backdrop so vibrancy reads */
+    background:
+      radial-gradient(120% 90% at 18% 12%, #3a3f57 0%, #23252e 46%, #16171d 100%),
+      #14151a;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    display:flex;gap:54px;align-items:flex-start;justify-content:center;
+    padding:64px 48px 80px;min-height:100%;flex-wrap:wrap;
+  }
+  .stage{display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+  .stage h2{font-size:12px;font-weight:600;letter-spacing:.02em;color:var(--ink-muted);
+    text-transform:none;padding-left:4px}
+
+  /* ===== menubar context strip ===== */
+  .menubar{
+    width:340px;height:26px;border-radius:8px;
+    background:rgba(20,21,26,0.6);backdrop-filter:blur(20px);
+    border:1px solid var(--hairline);
+    display:flex;align-items:center;justify-content:flex-end;gap:16px;
+    padding:0 12px;margin-bottom:2px;
+  }
+  .menubar .glyph{display:flex;align-items:center;gap:6px;color:var(--ink);opacity:.92}
+  .menubar svg{display:block}
+  .menubar .clock{font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+
+  /* ===== popover ===== */
+  .popover{
+    width:316px;border-radius:16px;background:var(--bg);
+    backdrop-filter:blur(40px) saturate(140%);
+    -webkit-backdrop-filter:blur(40px) saturate(140%);
+    border:1px solid var(--hairline-strong);
+    box-shadow:var(--shadow);
+    overflow:hidden;position:relative;
+  }
+  .popover::before{ /* top sheen */
+    content:"";position:absolute;inset:0 0 auto 0;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent);
+  }
+  .pad{padding:16px 16px 14px}
+  .sep{height:1px;background:var(--hairline);margin:0 16px}
+
+  /* tempo block */
+  .tempo-row{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+  .bpm{display:flex;align-items:baseline;gap:8px}
+  .bpm .val{font-family:"SF Pro Display",var(--font);font-size:42px;font-weight:500;
+    line-height:.9;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .bpm .unit{font-size:12px;font-weight:600;color:var(--ink-muted);letter-spacing:.04em}
+  .nudge{display:flex;flex-direction:column;gap:4px}
+  .nudge button{
+    width:30px;height:22px;border-radius:7px;border:1px solid var(--hairline-strong);
+    background:var(--surface);color:var(--ink-2);font-size:12px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;transition:.16s ease-out;
+  }
+  .nudge button:hover{background:var(--surface-hover);color:var(--ink)}
+
+  .transport{display:flex;align-items:center;gap:10px;margin-top:14px}
+  .play{
+    flex:1;height:40px;border:none;border-radius:11px;cursor:pointer;
+    background:var(--accent);color:#fff;font-size:14px;font-weight:600;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    box-shadow:0 1px 0 rgba(255,255,255,0.15) inset, 0 6px 16px rgba(47,107,255,0.32);
+    transition:.16s ease-out;
+  }
+  .play:hover{filter:brightness(1.06)}
+  .play.stopped{background:var(--surface);color:var(--ink);
+    box-shadow:none;border:1px solid var(--hairline-strong)}
+  .ghost{
+    height:40px;padding:0 13px;border-radius:11px;cursor:pointer;font-size:12.5px;font-weight:500;
+    background:var(--surface);color:var(--ink-2);border:1px solid var(--hairline-strong);
+    display:flex;align-items:center;gap:6px;transition:.16s ease-out;
+  }
+  .ghost:hover{background:var(--surface-hover);color:var(--ink)}
+  .taps{margin-top:9px;display:flex;align-items:center;gap:7px;color:var(--ink-muted);font-size:11px}
+  .taps .dots{display:flex;gap:4px}
+  .taps .dots i{width:5px;height:5px;border-radius:50%;background:var(--ink-muted);opacity:.5;display:block}
+  .taps .dots i.on{background:var(--accent);opacity:1}
+
+  /* link block */
+  .block-label{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+  .block-label .t{font-size:11px;font-weight:600;color:var(--ink-muted);letter-spacing:.02em}
+  .peers{font-size:11px;color:var(--ink-2);font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:6px}
+  .peers .live{width:6px;height:6px;border-radius:50%;background:var(--accent);
+    box-shadow:0 0 0 3px var(--accent-soft)}
+  .segmented{
+    display:flex;background:var(--surface);border-radius:10px;padding:3px;gap:3px;
+    border:1px solid var(--hairline);
+  }
+  .segmented button{
+    flex:1;height:30px;border:none;border-radius:7px;background:transparent;cursor:pointer;
+    color:var(--ink-2);font-size:12.5px;font-weight:500;transition:.16s ease-out;
+  }
+  .segmented button:hover{color:var(--ink)}
+  .segmented button[aria-selected="true"]{
+    background:var(--accent);color:#fff;font-weight:600;
+    box-shadow:0 1px 3px rgba(0,0,0,.3)
+  }
+  .mode-hint{margin-top:8px;font-size:11px;color:var(--ink-muted);line-height:1.35}
+  .mode-hint b{color:var(--ink-2);font-weight:600}
+
+  /* output health */
+  .health{display:flex;align-items:center;justify-content:space-between;cursor:pointer;
+    border-radius:10px;padding:10px 12px;margin:2px 0;background:var(--surface);
+    border:1px solid var(--hairline);transition:.16s ease-out}
+  .health:hover{background:var(--surface-hover)}
+  .health .left{display:flex;align-items:center;gap:10px}
+  .pulse{width:9px;height:9px;border-radius:50%;background:var(--accent);position:relative}
+  .pulse::after{content:"";position:absolute;inset:-5px;border-radius:50%;
+    border:1.5px solid var(--accent);opacity:0;animation:pp 1.2s ease-out infinite}
+  @keyframes pp{0%{transform:scale(.6);opacity:.7}100%{transform:scale(1.5);opacity:0}}
+  .health .summary{font-size:12.5px;color:var(--ink)}
+  .health .summary span{color:var(--ink-muted)}
+  .health .chev{color:var(--ink-muted);font-size:15px}
+
+  /* footer */
+  .foot{display:flex;align-items:center;justify-content:space-between;padding:10px 14px}
+  .foot button{background:none;border:none;color:var(--ink-muted);cursor:pointer;font-size:12px;
+    display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:7px;transition:.16s}
+  .foot button:hover{color:var(--ink);background:var(--surface)}
+
+  /* ===== preferences window ===== */
+  .prefs{
+    width:560px;border-radius:12px;overflow:hidden;background:#202228;
+    border:1px solid var(--hairline-strong);box-shadow:var(--shadow);
+  }
+  .titlebar{height:52px;display:flex;align-items:center;gap:8px;padding:0 14px;
+    background:rgba(28,30,36,0.9);border-bottom:1px solid var(--hairline);position:relative}
+  .traffic{display:flex;gap:8px;position:absolute;left:14px}
+  .traffic i{width:12px;height:12px;border-radius:50%;display:block}
+  .traffic .r{background:#ff5f57}.traffic .y{background:#febc2e}.traffic .g{background:#28c840}
+  .tabs{display:flex;gap:2px;margin:0 auto}
+  .tabs button{border:none;background:none;color:var(--ink-2);cursor:pointer;font-size:12.5px;
+    padding:7px 14px;border-radius:8px;display:flex;flex-direction:column;align-items:center;gap:3px;font-weight:500}
+  .tabs button.active{background:var(--surface);color:var(--ink)}
+  .tabs .ic{font-size:15px;line-height:1}
+
+  .prefs-body{padding:18px 20px 22px}
+  .dev-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .dev-head .title{font-size:13px;font-weight:600;color:var(--ink)}
+  .dev-head .sub{font-size:11.5px;color:var(--ink-muted);margin-top:2px}
+  .global{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-2)}
+  .global .stepper{display:flex;align-items:center;background:var(--surface);border-radius:8px;
+    border:1px solid var(--hairline);overflow:hidden}
+  .global .stepper button{border:none;background:none;color:var(--ink-2);width:26px;height:26px;cursor:pointer;font-size:13px}
+  .global .stepper button:hover{background:var(--surface-hover);color:var(--ink)}
+  .global .stepper .v{min-width:46px;text-align:center;font-size:12px;font-variant-numeric:tabular-nums;color:var(--ink)}
+
+  table{width:100%;border-collapse:collapse;margin-top:12px}
+  thead th{font-size:10.5px;font-weight:600;color:var(--ink-muted);text-align:left;
+    padding:0 10px 8px;letter-spacing:.02em}
+  thead th.c{text-align:center}
+  tbody tr{background:var(--surface);transition:.16s ease-out}
+  tbody tr:hover{background:var(--surface-hover)}
+  tbody td{padding:11px 10px;border-top:6px solid #202228;vertical-align:middle}
+  tbody tr td:first-child{border-radius:10px 0 0 10px}
+  tbody tr td:last-child{border-radius:0 10px 10px 0}
+  .dev{display:flex;align-items:center;gap:11px}
+  .dot{width:9px;height:9px;border-radius:50%;flex:none;position:relative}
+  .dot.active{background:var(--accent)}
+  .dot.active::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1.5px solid var(--accent);opacity:.45}
+  .dot.ready{background:transparent;border:1.5px solid var(--ink-2)}
+  .dot.missing{background:transparent;border:1.5px solid var(--amber)}
+  .dot.virtual{background:var(--ink);box-shadow:0 0 0 3px rgba(255,255,255,.08)}
+  .dev .meta .name{font-size:13px;color:var(--ink);font-weight:500;display:flex;align-items:center;gap:7px}
+  .dev .meta .name .edit{opacity:0;color:var(--ink-muted);font-size:11px;transition:.16s}
+  tbody tr:hover .edit{opacity:1}
+  .dev .meta .endpoint{font-size:10.5px;color:var(--ink-muted);margin-top:2px}
+  .badge{font-size:9.5px;font-weight:600;padding:2px 6px;border-radius:5px;letter-spacing:.02em}
+  .badge.new{background:var(--accent-soft);color:#9bbcff}
+  .badge.virt{background:rgba(255,255,255,.08);color:var(--ink-2)}
+  .stat{font-size:11px;display:flex;align-items:center;gap:6px;color:var(--ink-2)}
+  .stat.missing{color:var(--amber)}
+
+  /* switch */
+  .sw{width:38px;height:23px;border-radius:12px;background:#4a4e57;position:relative;cursor:pointer;
+    transition:.18s ease-out;margin:0 auto;display:block}
+  .sw::after{content:"";position:absolute;top:2px;left:2px;width:19px;height:19px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:left .18s cubic-bezier(.22,1,.36,1)}
+  .sw.on{background:var(--accent)}
+  .sw.on::after{left:17px}
+  .sw.off{opacity:.7}
+
+  .ms{display:flex;align-items:center;background:#202228;border-radius:8px;border:1px solid var(--hairline-strong);overflow:hidden;width:92px;margin:0 auto}
+  .ms button{border:none;background:none;color:var(--ink-2);width:24px;height:26px;cursor:pointer;font-size:13px}
+  .ms button:hover{background:var(--surface-hover);color:var(--ink)}
+  .ms .v{flex:1;text-align:center;font-size:12px;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .ms.dim{opacity:.4}
+  td.c{text-align:center}
+  .legend{display:flex;gap:18px;margin-top:16px;padding-top:14px;border-top:1px solid var(--hairline);
+    font-size:11px;color:var(--ink-muted);flex-wrap:wrap}
+  .legend span{display:flex;align-items:center;gap:7px}
+  .panic{margin-left:auto;font-size:11.5px;color:var(--amber);background:rgba(226,162,59,.1);
+    border:1px solid rgba(226,162,59,.28);padding:6px 12px;border-radius:8px;cursor:pointer;font-weight:500}
+  .caption{margin-top:46px;color:var(--ink-muted);font-size:11px;max-width:340px;line-height:1.5;text-align:center}
+</style>
+</head>
+<body>
+
+  <!-- ============ POPOVER ============ -->
+  <div class="stage">
+    <h2>Menubar popover — primary surface</h2>
+    <div class="menubar">
+      <div class="glyph" title="Synclock">
+        <svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.4">
+          <circle cx="9" cy="9" r="6.2"/><line x1="9" y1="9" x2="9" y2="3.6" stroke-width="1.6"/>
+          <circle cx="9" cy="9" r="1.1" fill="currentColor" stroke="none"/>
+        </svg>
+      </div>
+      <span class="clock">9:41</span>
+    </div>
+
+    <div class="popover">
+      <div class="pad">
+        <div class="tempo-row">
+          <div class="bpm"><span class="val">122.5</span><span class="unit">BPM</span></div>
+          <div class="nudge"><button>▲</button><button>▼</button></div>
+        </div>
+        <div class="transport">
+          <button class="play"><svg width="13" height="14" viewBox="0 0 13 14" fill="currentColor"><rect x="1" y="1" width="4" height="12" rx="1"/><rect x="8" y="1" width="4" height="12" rx="1"/></svg> Stop</button>
+          <button class="ghost"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.5 1.5v5M3 3.2A5 5 0 1 0 10 3.2"/></svg> Tap</button>
+        </div>
+        <div class="taps"><span>Tap tempo</span><div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div></div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="pad">
+        <div class="block-label"><span class="t">ABLETON LINK</span>
+          <span class="peers"><span class="live"></span>3 peers</span></div>
+        <div class="segmented">
+          <button>Free</button>
+          <button aria-selected="true">Follow</button>
+          <button>Lead</button>
+        </div>
+        <div class="mode-hint"><b>Following Link.</b> Tempo and phase track the session. Local BPM is read-only.</div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="pad" style="padding-top:12px;padding-bottom:8px">
+        <div class="health">
+          <div class="left"><span class="pulse"></span>
+            <span class="summary">3 outputs active <span>· 1 missing</span></span></div>
+          <span class="chev">›</span>
+        </div>
+      </div>
+
+      <div class="sep"></div>
+      <div class="foot">
+        <button><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 5a3 3 0 100 6 3 3 0 000-6zm6.4 3l1.2-1.4-1.2-2.1-1.8.4a5 5 0 00-1.2-.7L11 1.5H8.6L8.4 3.3a5 5 0 00-1.2.7L5.4 3.6 4.2 5.7 5.4 7.1a5 5 0 000 1.8L4.2 10.3l1.2 2.1 1.8-.4a5 5 0 001.2.7l.4 1.8H11l.2-1.8a5 5 0 001.2-.7l1.8.4 1.2-2.1L14.4 9a5 5 0 000-1z"/></svg> Preferences…</button>
+        <button title="Quit">⏻ Quit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PREFERENCES / DEVICES ============ -->
+  <div class="stage">
+    <h2>Preferences → Devices — gear management</h2>
+    <div class="prefs">
+      <div class="titlebar">
+        <div class="traffic"><i class="r"></i><i class="y"></i><i class="g"></i></div>
+        <div class="tabs">
+          <button><span class="ic">⚙</span>General</button>
+          <button class="active"><span class="ic">🎛</span>Devices</button>
+          <button><span class="ic">⛓</span>Link</button>
+          <button><span class="ic">ⓘ</span>About</button>
+        </div>
+      </div>
+      <div class="prefs-body">
+        <div class="dev-head">
+          <div>
+            <div class="title">Devices</div>
+            <div class="sub">Choose what receives clock. New gear stays off until you enable it.</div>
+          </div>
+          <div class="global">Global offset
+            <div class="stepper"><button>−</button><span class="v">+0 ms</span><button>+</button></div>
+          </div>
+        </div>
+
+        <table>
+          <thead><tr>
+            <th>Output</th><th class="c">Sync</th><th class="c">Delay</th><th class="c">Transport</th><th>Status</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td><div class="dev"><span class="dot virtual"></span>
+                <div class="meta"><div class="name">Synclock <span class="badge virt">VIRTUAL</span></div>
+                <div class="endpoint">Virtual source · seen by DAWs</div></div></div></td>
+              <td class="c"><span class="sw on"></span></td>
+              <td class="c"><div class="ms"><button>−</button><span class="v">0</span><button>+</button></div></td>
+              <td class="c"><span class="sw on"></span></td>
+              <td><span class="stat"><span class="dot active"></span>Active</span></td>
+            </tr>
+            <tr>
+              <td><div class="dev"><span class="dot active"></span>
+                <div class="meta"><div class="name">TR-8S <span class="edit">✎ rename</span></div>
+                <div class="endpoint">Roland TR-8S · USB</div></div></div></td>
+              <td class="c"><span class="sw on"></span></td>
+              <td class="c"><div class="ms"><button>−</button><span class="v">+12</span><button>+</button></div></td>
+              <td class="c"><span class="sw on"></span></td>
+              <td><span class="stat"><span class="dot active"></span>Active</span></td>
+            </tr>
+            <tr>
+              <td><div class="dev"><span class="dot active"></span>
+                <div class="meta"><div class="name">Digitakt <span class="edit">✎ rename</span></div>
+                <div class="endpoint">Elektron Digitakt · USB</div></div></div></td>
+              <td class="c"><span class="sw on"></span></td>
+              <td class="c"><div class="ms"><button>−</button><span class="v">−4</span><button>+</button></div></td>
+              <td class="c"><span class="sw off"></span></td>
+              <td><span class="stat"><span class="dot active"></span>Clock only</span></td>
+            </tr>
+            <tr>
+              <td><div class="dev"><span class="dot missing"></span>
+                <div class="meta"><div class="name">Minilogue <span class="edit">✎ rename</span></div>
+                <div class="endpoint">Korg Minilogue · remembered</div></div></div></td>
+              <td class="c"><span class="sw on"></span></td>
+              <td class="c"><div class="ms dim"><button>−</button><span class="v">0</span><button>+</button></div></td>
+              <td class="c"><span class="sw on"></span></td>
+              <td><span class="stat missing"><span class="dot missing"></span>Unplugged</span></td>
+            </tr>
+            <tr>
+              <td><div class="dev"><span class="dot ready"></span>
+                <div class="meta"><div class="name">MIDI Express 128 <span class="badge new">NEW</span></div>
+                <div class="endpoint">MOTU · port 3</div></div></div></td>
+              <td class="c"><span class="sw off"></span></td>
+              <td class="c"><div class="ms dim"><button>−</button><span class="v">0</span><button>+</button></div></td>
+              <td class="c"><span class="sw off"></span></td>
+              <td><span class="stat">Ready</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="legend">
+          <span><span class="dot active"></span> Active · receiving clock</span>
+          <span><span class="dot ready"></span> Ready · present, idle</span>
+          <span><span class="dot missing"></span> Missing · remembered</span>
+          <button class="panic">⏹ Panic · stop &amp; all-notes-off</button>
+        </div>
+      </div>
+    </div>
+    <p class="caption">Per-device: enable sync · nickname · sync delay (ms) · send-transport vs clock-only · live status. New gear defaults OFF for live safety.</p>
+  </div>
+
+</body>
+</html>

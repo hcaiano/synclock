@@ -1,0 +1,31 @@
+# Swift Package Manager
+.build/
+.swiftpm/
+Package.resolved
+
+# macOS
+.DS_Store
+
+# Build output / bundles
+/dist/
+*.app
+*.dmg
+
+# Editor
+*.xcodeproj
+*.xcworkspace
+
+# Agent / tool harness dirs (not part of the app)
+.claude/
+.codex/
+.cursor/
+.agents/
+.gemini/
+.kiro/
+.opencode/
+.qoder/
+.impeccable/
+.planning/
+
+# Local runtime config (lives in ~/.config/synclock)
+/synclock-settings.json
