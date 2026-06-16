@@ -62,3 +62,17 @@
 - **Phase 0 COMPLETE**: vendored `Ableton/link` as a pinned `Link-4.0` submodule with `asio-standalone`; wired `Package.swift` C++17 header paths + `LINK_PLATFORM_MACOSX=1`; replaced the local-clock stub with real `std::unique_ptr<ableton::Link>` behind the unchanged C ABI; `MCLinkIsRealImplementation()` returns true.
 - Added `SynclockLinkCheck` CLI proof target. Verified `swift build`, `swift run SynclockTests`, `swift run SynclockLinkCheck --self-peer` (two real Link instances discover each other; peer-count/tempo/start-stop callbacks fire), and external-process proof with Ableton `LinkHutSilent` + `swift run SynclockLinkCheck --require-peer`.
 - **B Pulse Path production identity generated**: replaced the previous direction-A production assets with B-derived `branding/app-icon/synclock-icon-1024.png`, full `branding/Synclock.appiconset`, `branding/menubar/` idle/playing template glyphs, `branding/wordmark/synclock-wordmark-lockup.png`, and updated verification sheets. `branding/generate_synclock_icons.py` now regenerates production assets from `branding/explorations/b-pulse-path/`.
+
+## Session 5 — UI, harness, Phase 5 seam, marketing, first push (Claude)
+- Phase 6 COMPLETE (core): NSPopover (Theme/PopoverViewController/PulseView) per mockup, offscreen-rendered + verified (design/synclock-popover-render.png). Status item left-click=popover/right-click=menu.
+- Phase 7 UI COMPLETE (core): PreferencesWindowController (General · Devices · Link · About); Devices = NSTableView gear table + Panic/Refresh.
+- Phase 8 COMPLETE (harness): SynclockJitter. Measured idle/release 120 BPM p95=0.045/p99=0.062ms; 300 BPM p95=0.028/p99=0.054ms (~5-6x better than target).
+- Phase 5 SEAM: TickGrid protocol + FreeRunningGrid; ClockEngine refactored to drive ticks via `grid`+`setGrid()`; anchorIndex fix (no beat-0 replay on grid swap) per Codex review. 76 checks. Handed to Codex for LinkFollowGrid + setMode.
+- Phase 10 COMPLETE (core): site/index.html landing page reusing real popover + B icon; passed impeccable hook.
+- **FIRST COMMIT + PUSH**: github.com/hcaiano/synclock (main). 29 Swift files, 96 branding assets, docs, site, Link submodule gitlink; tool/agent dirs gitignored.
+- Discovered Henrique's real gear on launch: AF16Rig (DIN1/2, USB Host, Clock Out, Mixer Control).
+
+### Blocked / open
+- Phase 9 packaging (notarized DMG + Sparkle) BLOCKED on Henrique's Apple Developer ID.
+- Deploy site to synclock.caiano.com (Henrique DNS/hosting). Full test-gear list.
+- Codex: Phase 5 Follow/Lead in progress.
