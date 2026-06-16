@@ -74,6 +74,7 @@ final class PopoverViewController: NSViewController {
     private func tempoRow() -> NSView {
         bpmLabel.font = Theme.monoDigits(size: 40, weight: .medium)
         bpmLabel.textColor = Theme.ink
+        bpmLabel.setAccessibilityLabel("Tempo in beats per minute")
         let unit = NSTextField(labelWithString: "BPM")
         unit.font = .systemFont(ofSize: 11, weight: .semibold)
         unit.textColor = Theme.inkMuted
@@ -105,6 +106,7 @@ final class PopoverViewController: NSViewController {
         let tapButton = NSButton(title: "Tap", target: self, action: #selector(tapTempo))
         tapButton.bezelStyle = .rounded
         tapButton.controlSize = .large
+        tapButton.setAccessibilityLabel("Tap tempo")
 
         let row = NSStackView(views: [playButton, tapButton])
         row.distribution = .fillProportionally
@@ -127,6 +129,7 @@ final class PopoverViewController: NSViewController {
         modeControl.target = self
         modeControl.action = #selector(modeChanged)
         modeControl.segmentDistribution = .fillEqually
+        modeControl.setAccessibilityLabel("Ableton Link mode")
         modeControl.widthAnchor.constraint(equalToConstant: Theme.popoverWidth - 32).isActive = true
 
         modeHint.font = .systemFont(ofSize: 11)
@@ -176,6 +179,8 @@ final class PopoverViewController: NSViewController {
         b.bezelStyle = .rounded
         b.font = .systemFont(ofSize: 10)
         b.widthAnchor.constraint(equalToConstant: 30).isActive = true
+        // Arrow glyphs read poorly under VoiceOver; give them real labels.
+        b.setAccessibilityLabel(title == "▲" ? "Increase tempo" : "Decrease tempo")
         return b
     }
 
