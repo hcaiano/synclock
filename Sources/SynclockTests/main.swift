@@ -1,4 +1,5 @@
 import Foundation
+import AbletonLinkBridge
 import SynclockCore
 import SynclockMIDI
 
@@ -183,6 +184,34 @@ group("ClockEngine grid swap anchors to current position (no replay)") {
     check(!indices.isEmpty, "scheduled at least one tick")
     check(indices.allSatisfy { $0 >= 49 }, "no replay of beat-0 history; starts near current index (~50)")
     check(zip(indices, indices.dropFirst()).allSatisfy { $0 < $1 }, "indices monotonic after swap")
+}
+
+group("LinkClockMapper maps by sampled delta") {
+    let mapper = LinkClockMapper(hostNanosAtSample: 1_000_000_000, linkMicrosAtSample: 50_000)
+    check(mapper.linkMicros(forHostNanos: 1_010_000_000) == 60_000, "host future -> link micros")
+    check(mapper.linkMicros(forHostNanos: 990_000_000) == 40_000, "host past -> link micros")
+    check(mapper.hostNanos(forLinkMicros: 60_000) == 1_010_000_000, "link future -> host nanos")
+    check(mapper.hostNanos(forLinkMicros: 40_000) == 990_000_000, "link past -> host nanos")
+}
+
+group("LinkFollowGrid maps Link beats into host ticks") {
+    if let link = MCLinkCreate(120) {
+        defer { MCLinkDestroy(link) }
+        let nowHost = HostTime.nowNanos()
+        MCLinkSetTempo(link, 120, MCLinkClockMicros(link))
+        let grid = LinkFollowGrid(link: link, hostNanosAtSample: nowHost)
+        let current = grid.lastDueIndex(byHostNanos: nowHost)
+        let future = grid.lastDueIndex(byHostNanos: nowHost + 100_000_000)
+        check(future > current, "future horizon advances tick index")
+        let first = max(current + 1, 0)
+        let t0 = grid.hostTimeNanos(forTick: first)
+        let t1 = grid.hostTimeNanos(forTick: first + 1)
+        check(t1 > t0, "Link-follow tick timestamps are monotonic")
+        check(abs(Double(Int64(t0) - Int64(nowHost))) < 1_000_000_000,
+              "next Link-follow tick maps near current host time")
+    } else {
+        check(false, "MCLinkCreate returned nil")
+    }
 }
 
 group("TransportLogic emits Start/Stop and gates clock") {

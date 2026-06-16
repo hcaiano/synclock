@@ -63,6 +63,12 @@ let package = Package(
             name: "SynclockLinkCheck",
             dependencies: ["AbletonLinkBridge"]
         ),
+        // Phase 5 proof: exercises SyncEngine Follow/Lead against a real
+        // Ableton Link peer in-process.
+        .executableTarget(
+            name: "SynclockFollowCheck",
+            dependencies: ["SynclockCore", "SynclockMIDI", "AbletonLinkBridge"]
+        ),
         // Phase 8 jitter harness: measures inter-tick delivery deviation
         // (p50/p95/p99) at 120 & 300 BPM, optionally under CPU load.
         .executableTarget(

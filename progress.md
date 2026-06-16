@@ -76,3 +76,21 @@
 - Phase 9 packaging (notarized DMG + Sparkle) BLOCKED on Henrique's Apple Developer ID.
 - Deploy site to synclock.caiano.com (Henrique DNS/hosting). Full test-gear list.
 - Codex: Phase 5 Follow/Lead in progress.
+
+## Session 6 — Phase 5 Follow/Lead Link integration (Codex)
+- Implemented `Sources/SynclockCore/LinkFollowGrid.swift`: `LinkClockMapper` samples host nanos + Link clock micros once per mode switch and maps by delta (no epoch-equality assumption); `LinkFollowGrid` maps MIDI tick `i` to Link beat `i / MIDIClock.pulsesPerQuarterNote` at quantum 4, with Link owning tempo/phase.
+- Wired `SyncEngine.setMode`: Free disables Link and uses `FreeRunningGrid`; Follow enables Link/start-stop sync, installs `LinkFollowGrid`, shows Link tempo, and adopts Link start/stop without mirroring back; Lead enables Link, keeps the local free-running grid, and publishes local tempo/start/stop through Link.
+- Added `SynclockFollowCheck` proof target: creates a `SyncEngine` plus a second real Ableton Link peer in-process, verifies peer discovery, Follow tempo adoption, Follow start/stop adoption, Lead tempo publication, and Lead start/stop publication.
+- Added deterministic tests for `LinkClockMapper` and `LinkFollowGrid`.
+
+### Verified
+- `swift build`
+- `swift run SynclockTests` → 83/83 checks
+- `swift run SynclockFollowCheck` → OK (`peerCount=1`, `followTempo=137`, `leadTempo=111`)
+- `swift run SynclockLinkCheck --self-peer` → OK (real implementation, peer/tempo/start-stop callbacks)
+- `swift run SynclockClockCheck` → 50 pulses/s at 120 BPM (expected ~48), within tolerance
+- `swift run -c release SynclockJitter` → 120 BPM p95=0.031ms/p99=0.047ms; 300 BPM p95=0.027ms/p99=0.044ms (one max first-tick outlier retained in harness output)
+
+### Remaining
+- Claude review of SyncEngine Phase 5 wiring.
+- Follow-mode jitter pass and external Ableton Live/LinkHut peer smoke test.

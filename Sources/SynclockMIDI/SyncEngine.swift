@@ -3,10 +3,27 @@ import CoreMIDI
 import SynclockCore
 import AbletonLinkBridge
 
+private final class LinkCallbackBox {
+    weak var engine: SyncEngine?
+    init(engine: SyncEngine) { self.engine = engine }
+}
+
+private let syncEngineTempoCallback: MCLinkTempoCallback = { context, bpm in
+    guard let context else { return }
+    let box = Unmanaged<LinkCallbackBox>.fromOpaque(context).takeUnretainedValue()
+    box.engine?.linkTempoChanged(bpm)
+}
+
+private let syncEngineStartStopCallback: MCLinkStartStopCallback = { context, isPlaying in
+    guard let context else { return }
+    let box = Unmanaged<LinkCallbackBox>.fromOpaque(context).takeUnretainedValue()
+    box.engine?.linkStartStopChanged(isPlaying)
+}
+
 /// The runtime that composes the whole app: settings + gear model + clock
 /// scheduler + CoreMIDI output + the Link bridge. The UI (Phase 6) drives this
-/// and reads `Snapshot` for display. Free mode is fully functional here; Follow/
-/// Lead tick-derivation is wired in Phase 5 (the bridge is already created).
+/// and reads `Snapshot` for display. Free and Lead run the local grid; Follow
+/// derives MIDI tick timestamps from the active Ableton Link beat grid.
 ///
 /// Call from the main thread. The clock runs on its own high-priority queue.
 public final class SyncEngine {
@@ -27,6 +44,7 @@ public final class SyncEngine {
     private let clock: ClockEngine
     private var gear: GearModel
     private let link: OpaquePointer?
+    private var linkCallbackContext: UnsafeMutableRawPointer?
 
     private var discovered: [DiscoveredOutput] = []
     private(set) public var transport: TransportState = .stopped
@@ -41,12 +59,22 @@ public final class SyncEngine {
         self.clock = ClockEngine(tempo: loaded.tempo, output: output)
         self.link = MCLinkCreate(loaded.bpm)
         output.globalOffsetNanos = Int64((loaded.globalOffsetMs * 1_000_000).rounded())
+        if let link {
+            installLinkCallbacks(link)
+            MCLinkSetStartStopSyncEnabled(link, true)
+        }
+        applyLinkMode(loaded.linkMode, at: HostTime.nowNanos(), persistSettings: false)
         refreshDevices()
         // Honour clock-while-stopped on launch (continuous F8 even when stopped).
         updateClockRunning(at: HostTime.nowNanos())
     }
 
-    deinit { if let link { MCLinkDestroy(link) } }
+    deinit {
+        if let link { MCLinkDestroy(link) }
+        if let linkCallbackContext {
+            Unmanaged<LinkCallbackBox>.fromOpaque(linkCallbackContext).release()
+        }
+    }
 
     // MARK: - Devices
 
@@ -76,15 +104,19 @@ public final class SyncEngine {
     public func stop() { applyTransport(.stop) }
     public func toggle() { applyTransport(transport == .playing ? .stop : .play) }
 
-    private func applyTransport(_ action: TransportAction) {
+    private func applyTransport(_ action: TransportAction, mirrorToLink: Bool = true) {
         let decision = TransportLogic.resolve(state: transport, action: action,
                                               clockWhileStopped: settings.clockWhileStopped)
         transport = decision.state
         let now = HostTime.nowNanos() &+ 1_000_000 // 1 ms ahead
         for byte in decision.emit { output.sendTransport(byte, atHostNanos: now) }
-        // Mirror transport into Link (Lead) — harmless in Free; Phase 5 refines.
-        if settings.linkMode == .leadLink, let link {
-            MCLinkSetIsPlaying(link, transport == .playing, Int64(MCLinkClockMicros(link)))
+        if mirrorToLink, settings.linkMode == .leadLink, let link {
+            let linkNow = MCLinkClockMicros(link)
+            if transport == .playing {
+                MCLinkSetIsPlayingAndRequestBeatAtTime(link, true, linkNow, 0, LinkFollowGrid.defaultQuantum)
+            } else {
+                MCLinkSetIsPlaying(link, false, linkNow)
+            }
         }
         updateClockRunning(at: now)
     }
@@ -119,9 +151,7 @@ public final class SyncEngine {
     }
 
     public func setMode(_ mode: LinkMode) {
-        settings.linkMode = mode
-        if let link { MCLinkSetEnabled(link, mode.joinsSession) }
-        persist()
+        applyLinkMode(mode, at: HostTime.nowNanos(), persistSettings: true)
     }
 
     public func setClockWhileStopped(_ on: Bool) {
@@ -160,8 +190,14 @@ public final class SyncEngine {
     public func snapshot() -> Snapshot {
         let peers = link.map { Int(MCLinkPeerCount($0)) } ?? 0
         let statuses = gear.sortedDevices.map { status(for: $0.uniqueID) }
+        let displayedTempo: Tempo
+        if settings.linkMode == .followLink, let link {
+            displayedTempo = Tempo(MCLinkTempo(link))
+        } else {
+            displayedTempo = settings.tempo
+        }
         return Snapshot(
-            tempo: settings.tempo,
+            tempo: displayedTempo,
             mode: settings.linkMode,
             transport: transport,
             peerCount: peers,
@@ -171,6 +207,73 @@ public final class SyncEngine {
     }
 
     // MARK: -
+
+    private func installLinkCallbacks(_ link: OpaquePointer) {
+        let box = LinkCallbackBox(engine: self)
+        let context = Unmanaged.passRetained(box).toOpaque()
+        linkCallbackContext = context
+        MCLinkSetTempoCallback(link, context, syncEngineTempoCallback)
+        MCLinkSetStartStopCallback(link, context, syncEngineStartStopCallback)
+    }
+
+    private func applyLinkMode(_ mode: LinkMode, at now: UInt64, persistSettings: Bool) {
+        settings.linkMode = mode
+
+        guard let link else {
+            clock.setGrid(FreeRunningGrid(tempo: settings.tempo, origin: now), at: now)
+            if persistSettings { persist() }
+            return
+        }
+
+        MCLinkSetEnabled(link, mode.joinsSession)
+        MCLinkSetStartStopSyncEnabled(link, mode.joinsSession)
+
+        switch mode {
+        case .free:
+            clock.setGrid(FreeRunningGrid(tempo: settings.tempo, origin: now), at: now)
+
+        case .followLink:
+            settings.bpm = Tempo(MCLinkTempo(link)).bpm
+            clock.setGrid(LinkFollowGrid(link: link,
+                                         quantum: LinkFollowGrid.defaultQuantum,
+                                         hostNanosAtSample: now),
+                          at: now)
+            applyLinkTransportIfNeeded(MCLinkIsPlaying(link))
+
+        case .leadLink:
+            clock.setGrid(FreeRunningGrid(tempo: settings.tempo, origin: now), at: now)
+            let linkNow = MCLinkClockMicros(link)
+            MCLinkSetTempo(link, settings.bpm, linkNow)
+            if transport == .playing {
+                MCLinkSetIsPlayingAndRequestBeatAtTime(link, true, linkNow, 0, LinkFollowGrid.defaultQuantum)
+            } else {
+                MCLinkSetIsPlaying(link, false, linkNow)
+            }
+        }
+
+        if persistSettings { persist() }
+    }
+
+    fileprivate func linkTempoChanged(_ bpm: Double) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.settings.linkMode == .followLink else { return }
+            self.settings.bpm = Tempo(bpm).bpm
+            self.persist()
+        }
+    }
+
+    fileprivate func linkStartStopChanged(_ isPlaying: Bool) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.settings.linkMode == .followLink else { return }
+            self.applyLinkTransportIfNeeded(isPlaying)
+        }
+    }
+
+    private func applyLinkTransportIfNeeded(_ isPlaying: Bool) {
+        let target: TransportState = isPlaying ? .playing : .stopped
+        guard transport != target else { return }
+        applyTransport(isPlaying ? .play : .stop, mirrorToLink: false)
+    }
 
     private func persist() {
         settings.devices = Array(gear.devices.values)
