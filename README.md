@@ -3,8 +3,16 @@
 **A native macOS menubar master MIDI clock + Ableton Link.** Sync your hardware
 and software to one tight clock without opening a DAW. Free, native, open source.
 
-> Status: in active development. See [`task_plan.md`](task_plan.md) for the phased
-> build and [`GOAL_PROMPT.md`](GOAL_PROMPT.md) for the full spec.
+**[synclock.caiano.com](https://synclock.caiano.com)**
+
+## Download
+**[⬇ Download Synclock for macOS](https://github.com/hcaiano/synclock/releases/latest)** —
+signed and **notarized by Apple**, so it opens cleanly (no right-click-to-open).
+
+Open the `.dmg`, drag **Synclock** to Applications, and launch it — it lives in
+the menu bar. Auto-updates are built in (via Sparkle).
+
+> Requires **macOS 13** (Ventura) or later · **Apple Silicon**.
 
 ## What it does (v1)
 - Master **MIDI clock** (`0xF8` @ 24 PPQN) + transport (Start / Stop / Continue) to
@@ -15,8 +23,8 @@ and software to one tight clock without opening a DAW. Free, native, open source
 - Decimal BPM (30–300) + fine nudge + tap tempo.
 - A hand-owned, timestamped CoreMIDI scheduler — the clock is meant to feel *tight*.
 
-## Build
-Requires Swift 5.9+ (macOS 13+).
+## Build from source
+For developers. Most people should just [download the app](#download). Requires Swift 5.9+ (macOS 13+).
 
 ```sh
 swift build            # builds the app + C-ABI Link bridge
