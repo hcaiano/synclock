@@ -27,8 +27,10 @@ VERSION=0.1.0 IDENTITY="Developer ID Application: Henrique Caiano (TEAMID)" \
 xcrun notarytool submit dist/Synclock.app --keychain-profile synclock-notary --wait
 xcrun stapler staple dist/Synclock.app
 
-# 3. Package a DMG (Scripts/make-dmg.sh — add alongside build-app.sh)
-#    then notarize + staple the DMG too.
+# 3. Package a DMG (already implemented), then notarize + staple it too.
+VERSION=0.1.0 ./Scripts/make-dmg.sh dist
+xcrun notarytool submit dist/Synclock-0.1.0.dmg --keychain-profile synclock-notary --wait
+xcrun stapler staple dist/Synclock-0.1.0.dmg
 
 # 4. Sign the update with Sparkle's EdDSA key and update appcast.xml
 #    hosted at https://synclock.caiano.com/appcast.xml (SUFeedURL in Info.plist).
