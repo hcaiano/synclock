@@ -102,9 +102,9 @@ final class PopoverViewController: NSViewController {
         playButton.target = self
         playButton.action = #selector(toggleTransport)
         playButton.setButtonType(.momentaryPushIn)
-        // Primary transport: coral-filled with white label (matches the mockup).
+        // Primary transport: mint-filled with dark label (bright accent needs dark ink for contrast).
         playButton.bezelColor = Theme.accent
-        playButton.contentTintColor = .white
+        playButton.contentTintColor = Theme.inkOnAccent
 
         let tapButton = surfaceStyled(NSButton(title: "Tap", target: self, action: #selector(tapTempo)),
                                       radius: 11)
@@ -132,7 +132,7 @@ final class PopoverViewController: NSViewController {
         modeControl.target = self
         modeControl.action = #selector(modeChanged)
         modeControl.segmentDistribution = .fillEqually
-        modeControl.selectedSegmentBezelColor = Theme.accent // coral selected segment
+        modeControl.selectedSegmentBezelColor = Theme.accent // mint selected segment
         modeControl.setAccessibilityLabel("Ableton Link mode")
         modeControl.widthAnchor.constraint(equalToConstant: Theme.popoverWidth - 32).isActive = true
 
@@ -218,7 +218,7 @@ final class PopoverViewController: NSViewController {
         peersLabel.stringValue = snap.linkIsReal ? "\(snap.peerCount) \(peerWord)" : "Link unavailable"
         modeHint.stringValue = hint(for: snap.mode)
         playButton.title = snap.transport == .playing ? "Stop" : "Play"
-        playButton.contentTintColor = .white // always coral-filled with white label
+        playButton.contentTintColor = Theme.inkOnAccent // always mint-filled with dark label
         healthLabel.stringValue = "\(snap.activeOutputs) active · \(snap.missingOutputs) missing"
         pulse.setBeating(snap.transport == .playing, bpm: snap.tempo.bpm)
         view.window?.setAccessibilityLabel(

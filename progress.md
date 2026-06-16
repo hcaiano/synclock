@@ -129,3 +129,54 @@
 - Henrique chose **A Tempo Dot** as the locked new identity. Regenerated canonical production branding from `branding/explorations-v2/a-tempo-dot`: app icon master/exports, full `Synclock.appiconset`, menubar idle/playing template glyphs, wordmark lockup, and verification sheets.
 - Updated `branding/generate_synclock_icons.py` so the default source is the locked `explorations-v2/a-tempo-dot`; it still accepts an explicit source folder for future explorations.
 - Verified `.appiconset` manifest entries and image dimensions, export dimensions, menubar glyph dimensions, and visually checked `branding/verification/synclock-icon-readability-sheet.png` plus `branding/verification/synclock-menubar-glyph-sheet.png`.
+
+## Session 10 — Release hardening cleanup after rebrand (Codex)
+- Updated current source-of-truth docs/comments so they point at Tempo Dot + Pulse Coral instead of the retired B Pulse Path / Lineup-blue identity.
+- Tightened `RELEASING.md` around the real Sparkle tools fetched by SwiftPM: `.build/artifacts/sparkle/Sparkle/bin/generate_keys` and `generate_appcast --download-url-prefix ... --link ...`.
+- Proved the local, non-credentialed packaging path still works after the cleanup: `Scripts/build-app.sh` built an ad-hoc `Synclock.app`, `Scripts/make-dmg.sh` created a valid DMG, `codesign --verify --deep --strict` passed, `hdiutil verify` passed, and `Scripts/notarize.sh` correctly failed fast because the proof app was not Developer-ID signed.
+- Verified the live placeholder appcast at `https://synclock.caiano.com/appcast.xml` returns HTTP 200 and valid XML; first signed item still waits for Developer ID + Sparkle EdDSA key.
+- Closed the remaining Phase 3 hotplug gap: added `MIDIHotplugMonitor`, a CoreMIDI setup-change watcher that debounces notifications onto the main thread and calls `SyncEngine.refreshDevices()`. Manual Refresh remains as a fallback.
+- Ran `swift run -c release SynclockJitter --load`: 120 BPM p95=0.019ms/p99=0.028ms; 300 BPM p95=0.017ms/p99=0.024ms, with one 16.633ms max outlier at 300 BPM. p95/p99 remain far inside the target.
+- Closed the remaining Phase 7 nickname UI gap: the Devices table's device column is now editable and persists a nickname via `SyncEngine.setDeviceNickname`, falling back to the system name when cleared.
+- Added a Devices-pane empty state for systems with no CoreMIDI outputs; the virtual source remains available.
+
+## Session — coral→mint rebrand (#16C79A)
+- Theme.swift: accent → Fresh Mint #16C79A; added `inkOnAccent` (#0E1411) for dark labels on bright mint fills.
+- PopoverViewController.swift: Play button + selected Link segment now use dark ink on mint (contrast). Build green.
+- Site recolored to mint: index.html, hero-popover.html, og.html, DESIGN.md, PRODUCT.md.
+- Re-rendered crisp 2x mint product shot (headless Chrome) → site/assets/popover.png (1000x860); regenerated og.png with mint text.
+- Deployed: wrangler → synclock Worker (Caiano acct). Live synclock.caiano.com HTTP 200, serving #16C79A + new mint popover.png. Verified in browser.
+- Remaining coral: app icon (favicon/OG/wordmark) — pending Codex's AI-image-gen mint icons in branding/explorations-v3 (dir still empty). Will swap + redeploy when ready.
+
+## Session — landing page full rework (impeccable critique)
+- Ran /impeccable critique on site/index.html. Detector clean of mechanical tells; issues were editorial (jargon, small hero, decorative glow/motion, card reflex). Snapshot in .impeccable/critique/.
+- Refero refs (Mobbin not connected this session): Cron, Superwhisper, Metaview — native-app pages that lead with a big product visual + one accent + minimal copy.
+- Rewrote index.html (full rework):
+  - Hero now product-led: benefit headline "Lock your whole rig to one beat.", plain-language subcopy, NO code snippet.
+  - Hero visual = live CSS macOS menu bar with the Synclock tray icon highlighted (mint pulse) and the popover dropping from it (notch). Crisp/scalable, replaces the small floating popover.png.
+  - Killed AI-slop: hero radial glow, button glow-shadows + translateY hover lift, the 0.05ms hero-metric tile, the "Set/Choose/Play" mono kickers.
+  - "How it works" = plain numbered steps (hairline rows, no cards). Features = 2-col benefit list with mint-dot bullets, jargon removed (CoreMIDI/jitter demoted to "rock-solid timing, holds tight under load"). Download = final shipped-state language (Dev ID approval imminent).
+  - Reduced em-dashes in body copy to clear the detector's em-dash-overuse flag.
+  - single-font finding = intentional (system font is the Mac-native identity); not changed, no ignore persisted.
+- Fixed popover clipping (desktop min-height 486px). Verified desktop + mobile (390px) in browser.
+- Added .impeccable/ + hero-popover.html to site/.assetsignore; trashed stray site/.impeccable; redeployed. Stray internal file now 404. Live at synclock.caiano.com (200, new headline, old snippet gone).
+
+## Session — hero visual quality fix + icon finalists
+- User: landing hero widget still looks low quality. Diagnosed: the "desktop" was a flat black VOID with the popover floating in empty space + flat fake menubar = cheap/low-fidelity.
+- Refero grounding (Mobbin still not connected): premium pattern = app UI floating on a lush BLURRED MULTICOLOR GRADIENT wallpaper (Raster sign-in). Black void is the anti-pattern.
+- Fix: rebuilt hero visual — added a lush macOS-style wallpaper (.desktop::before: mint near the menubar icon + indigo/blue/teal/violet mesh, blur 34px) so the popover floats on color; popover backdrop-filter now picks up real frosted vibrancy (true macOS look). Bumped popover size/shadow, z-index layering. Deployed live.
+- Codex delivered v3 image-gen mint icons (kind=ready, sid 1781627969-d64a). 5 directions A-E. Reviewed full-res: A Mint Pulse Tile (white pulse waveform on mint) = strongest/friendliest/Dock-readable = my pick; D Sync Capsule (reads as toggle); B Phase Dots (pale, reads as refresh). Sent contact sheet + A/D/B to user. Awaiting pick, then productionize (icns/favicon/OG/wordmark/menubar glyph) + send Codex accepted.
+
+## Session — simplify hero to widget-only + ship icon A
+- User: "make it as simple as possible — show the widget only like the initial mockups. No top bar." Removed the fake menubar + desktop wallpaper entirely.
+- Hero visual now = the popover ONLY, centered, with a soft mint radial glow behind it + strong shadow (matches the mockup the user liked). Removed .desktop/.menubar/.tray/.notch CSS+markup; fixed mobile + reduced-motion rules.
+- Icon decision: user picked A (Mint Pulse Tile). Shipped to live site: site/assets/icon-256, icon-512, wordmark ← A; regenerated og.png (now shows A). Deployed. synclock.caiano.com live: 200, menubar markup gone, new headline, icon A in nav/OG.
+- Sent Codex (herdr kind=task, sid 1781627969-d64a) the decision + finalization task: promote A into app bundle (branding/app-icon, Synclock.appiconset/.icns, bundled menubar glyphs, wordmark). Site is mine; app bundle is his. Queued for his next turn. Notarized release still blocked on Apple Dev ID.
+
+## Session — release prep (Apple Dev account active)
+- Apple Developer account now active → Phase 9 unblocked. App-specific pw: reuse existing (it's per-Apple-ID, not per-app); store under its own notarytool profile `synclock-notary`.
+- Codex finished promoting icon A into app bundle/canonical branding (hash-verified, swift build green). Sent accepted → icon thread DONE across site + app.
+- Validated full build pipeline: `Scripts/build-app.sh dist-validate` green (ad-hoc) — app assembles with icon A, Sparkle.framework bundled, launchable. Only release delta = real Developer ID identity + Sparkle key.
+- Generated Sparkle EdDSA key (none existed in keychain). PUBLIC KEY = nRxOca8UMvC83e7/DELKYh0h6VHBPRqMkZfIDLDIgpw= (public, safe). Private key in login keychain — user must back it up.
+- NOTE/decision: validation build is arm64 THIN; marketing claims "Apple Silicon & Intel". Need universal build OR adjust copy.
+- BLOCKERS (user): Developer ID Application cert in keychain; `notarytool store-credentials synclock-notary`; provide Team ID + paste `security find-identity -p codesigning -v`.

@@ -3,8 +3,8 @@
 <style>
   :root{
     --bg: rgba(34,36,42,0.82); --surface:#2c2f36; --surface-2:#34373f; --surface-hover:#3a3e47;
-    --ink:#F2F4F0; --ink-2:#b9bdc4; --ink-muted:#868b94; --accent:#FF5C57;
-    --accent-soft:rgba(255,92,87,0.18); --amber:#E2A23B;
+    --ink:#F2F4F0; --ink-2:#b9bdc4; --ink-muted:#868b94; --accent:#16C79A;
+    --accent-soft:rgba(22,199,154,0.18); --amber:#E2A23B;
     --hairline:rgba(255,255,255,0.08); --hairline-strong:rgba(255,255,255,0.12);
     --font:-apple-system,"SF Pro Text","SF Pro Display","Helvetica Neue",system-ui,sans-serif;
     --shadow:0 24px 60px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
@@ -30,9 +30,9 @@
   .nudge button{width:30px;height:22px;border-radius:7px;border:1px solid var(--hairline-strong);
     background:var(--surface);color:var(--ink-2);font-size:12px;display:flex;align-items:center;justify-content:center}
   .transport{display:flex;align-items:center;gap:10px;margin-top:14px}
-  .play{flex:1;height:40px;border:none;border-radius:11px;background:var(--accent);color:#fff;font-size:14px;
+  .play{flex:1;height:40px;border:none;border-radius:11px;background:var(--accent);color:#0E1411;font-size:14px;
     font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;
-    box-shadow:0 1px 0 rgba(255,255,255,0.15) inset,0 6px 16px rgba(255,92,87,0.34)}
+    box-shadow:0 1px 0 rgba(255,255,255,0.15) inset,0 6px 16px rgba(22,199,154,0.34)}
   .ghost{height:40px;padding:0 13px;border-radius:11px;font-size:12.5px;font-weight:500;background:var(--surface);
     color:var(--ink-2);border:1px solid var(--hairline-strong);display:flex;align-items:center;gap:6px}
   .taps{margin-top:9px;display:flex;align-items:center;gap:7px;color:var(--ink-muted);font-size:11px}
@@ -46,7 +46,7 @@
   .segmented{display:flex;background:var(--surface);border-radius:10px;padding:3px;gap:3px;border:1px solid var(--hairline)}
   .segmented button{flex:1;height:30px;border:none;border-radius:7px;background:transparent;color:var(--ink-2);
     font-size:12.5px;font-weight:500}
-  .segmented button[aria-selected="true"]{background:var(--accent);color:#fff;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .segmented button[aria-selected="true"]{background:var(--accent);color:#0E1411;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.3)}
   .mode-hint{margin-top:8px;font-size:11px;color:var(--ink-muted);line-height:1.35}
   .mode-hint b{color:var(--ink-2);font-weight:600}
   .health{display:flex;align-items:center;justify-content:space-between;border-radius:10px;padding:10px 12px;

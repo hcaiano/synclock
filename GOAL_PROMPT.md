@@ -36,7 +36,7 @@ Measurable **inter-tick jitter** (timestamped CoreMIDI). Target **p95 ≤ ~0.3 m
 - **Menubar surface:** `NSStatusItem` + popover — BPM (tabular numerals), nudge, tap, transport, Link segmented mode + peer count, output-health chip, live pulse. Separate **Preferences** window with tabs **General · Devices · Link · About** (Devices = the per-device gear table; virtual port pinned at top; NEW badges; Panic). Build to match `design/synclock-mockup.html`, `DESIGN.md`, and `PRODUCT.md`.
 - **Persistence:** schema-versioned JSON in `~/.config/synclock/` with migration (Lineup pattern). Single global profile v1; schema designed to add profiles later.
 - **Production-ready states & a11y:** empty state (no gear → teach the virtual port), missing/reconnecting devices, virtual-port-creation failure, Link unavailable; full keyboard nav + VoiceOver (announce transport+mode+BPM); status never color-only; Reduce Motion fallback for the pulse.
-- **Distribution:** notarized DMG, hardened runtime, Developer ID signing, **Sparkle** appcast, GitHub Releases. App icon/menubar glyph/wordmark use the locked B "Pulse Path" identity from Codex.
+- **Distribution:** notarized DMG, hardened runtime, Developer ID signing, **Sparkle** appcast, GitHub Releases. App icon/menubar glyph/wordmark use the locked Tempo Dot identity from Codex.
 
 ## Marketing site & brand assets (`synclock.caiano.com`)
 A separate static marketing site (NOT GPL-bound; the app is GPLv2, the site is just a landing page) hosted at **synclock.caiano.com** (personal domain caiano.com — never gam3s.gg). It must **reuse the real app UI** we designed (the popover + Devices mockups in `design/`) as the product visuals, so the site shows the actual thing, not faux screenshots.
@@ -44,7 +44,7 @@ A separate static marketing site (NOT GPL-bound; the app is GPLv2, the site is j
 - **Sections:** hero (one-line pitch + the live menubar widget), the problem (sync your gear without a heavy DAW; the old jitter story), **"How it works"** (3 steps using the actual widgets: set tempo → choose which gear syncs → hit play / join Link), feature highlights (tight measurable clock, works with any gear + per-device control, Ableton Link Free/Follow/Lead, free & open-source), a quiet timing-quality proof (the jitter numbers), download (notarized DMG + GitHub Releases), free + Buy-Me-a-Coffee, GPLv2/source link.
 - **Assets to produce:** final app icon + logo/wordmark, favicon, OG/social share images, App-Store-style screenshots of both surfaces, and an optional short looping demo of the pulse + transport.
 - **Asset licensing (explicit):** marketing site source/assets may live separately from the GPL app source. App code is GPLv2-or-later; the **Synclock name/logo/brand assets are Henrique/Caiano brand assets** (reserved, not GPL) unless explicitly dual-licensed. Screenshots of the GPL app do not impose GPL on the static site. If brand assets also ship inside the app repo, license/reserve them separately in that repo so GPL doesn't sweep them in.
-- **Brand/logo direction (LOCKED — founder signed off):** explored 5 directions under `branding/explorations/`. **PRIMARY = B "Pulse Path"** — a clock/phase ring with a rhythmic pulse spike and centered downbeat dot, making the app's signature pulse the brand mark (one coherent system across icon → menubar glyph → in-app pulse → marketing hero). **ALTERNATE = C "Phase Grid"** (more technical/Link-forward). Locked refinements for B: centered blue dot = the downbeat (meaningful, not decoration); pulse spike = the beat event (not a generic waveform); ring stays quiet so the pulse owns the mark; reserve C's blue phase-arc for MOTION (in-app Link-phase sweep/fill, hover/active, marketing demo); keep graphite + off-white + `#2F6BFF` for Lineup-family consistency. Production `.appiconset`, menubar template glyph, favicon, wordmark, and site assets derive from B.
+- **Brand/logo direction (LOCKED — founder signed off):** founder replaced the earlier dark B "Pulse Path" direction with **A "Tempo Dot"** from `branding/explorations-v2/`: a light cream macOS tile with a friendly Pulse Coral tempo/downbeat dot, plus a minimal monochrome menubar glyph. Accent is **Pulse Coral `#FF5C57`** (distinct from Lineup blue). Production `.appiconset`, menubar template glyph, favicon, wordmark, site assets, and OG image derive from `branding/explorations-v2/a-tempo-dot` via `branding/generate_synclock_icons.py`.
 
 ## Architecture (Ableton Link bridge — already spiked, verified current)
 - Vendor **`github.com/Ableton/link`** C++ source as a pinned git submodule under `ThirdParty/ableton-link/` (NOT LinkKit — LinkKit's license covers iOS apps only). Header-only; add `include` + `modules/asio-standalone/asio/include`, define `LINK_PLATFORM_MACOSX=1`, C++17, Xcode 16.2+.
@@ -72,8 +72,8 @@ SPM + a C++17 target is the real build risk → **Phase 0 proves the build befor
 6. Menubar UI (popover, template glyph idle/playing).
 7. Preferences + persistence (JSON + migration, Devices gear table, global offset, per-device settings, launch-at-login).
 8. Timing test harness (p50/p95/p99 vs real rigs; acceptance checklist).
-9. Packaging (notarized DMG + Sparkle + GitHub Releases + locked B identity integration).
-10. **Brand + marketing site** (`synclock.caiano.com`): build the static landing page reusing the real widget UI for "How it works," plus favicon, logo/wordmark, social/OG assets, screenshots, and optional pulse demo from the locked B identity.
+9. Packaging (notarized DMG + Sparkle + GitHub Releases + locked Tempo Dot identity integration).
+10. **Brand + marketing site** (`synclock.caiano.com`): build the static landing page reusing the real widget UI for "How it works," plus favicon, logo/wordmark, social/OG assets, screenshots, and optional pulse demo from the locked Tempo Dot identity.
 
 ## Division of labor
 - **Claude:** core timing/transport/MIDI/persistence, AppKit UI, packaging, plan upkeep.
@@ -87,7 +87,7 @@ SPM + a C++17 target is the real build risk → **Phase 0 proves the build befor
 - Each phase is **done** when its gate passes AND there's a test or a measured number proving it. Don't mark a phase complete on hope.
 
 ## Definition of done (v1)
-A notarized, signed, GPLv2 DMG of Synclock that: lives in the menubar, sends a measurably tight MIDI clock + transport to a virtual port and selected hardware, supports per-device gear control (enable, nickname, sync delay, transport, status), joins an Ableton Link session in Free/Follow/Lead with the mode always visible, survives device hotplug safely, persists setup across launches, auto-updates via Sparkle, and ships the locked B "Pulse Path" Synclock identity — with a timing harness report showing p95/p99 jitter meeting (or honestly reporting against) the target.
+A notarized, signed, GPLv2 DMG of Synclock that: lives in the menubar, sends a measurably tight MIDI clock + transport to a virtual port and selected hardware, supports per-device gear control (enable, nickname, sync delay, transport, status), joins an Ableton Link session in Free/Follow/Lead with the mode always visible, survives device hotplug safely, persists setup across launches, auto-updates via Sparkle, and ships the locked Tempo Dot + Pulse Coral Synclock identity — with a timing harness report showing p95/p99 jitter meeting (or honestly reporting against) the target.
 
 ## Open items to confirm at kickoff
 - Henrique's exact test hardware (he has a lot of gear — get the specific list to define the Phase 8 acceptance rig).

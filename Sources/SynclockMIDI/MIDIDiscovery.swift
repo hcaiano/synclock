@@ -39,3 +39,22 @@ public enum MIDIDiscovery {
         return cf as String
     }
 }
+
+/// Watches CoreMIDI setup changes so plugged/unplugged devices are reconciled
+/// without requiring the user to press Refresh.
+public final class MIDIHotplugMonitor {
+    public enum SetupError: Error { case clientCreate(OSStatus) }
+
+    private var client = MIDIClientRef()
+
+    public init(onChange: @escaping () -> Void) throws {
+        let status = MIDIClientCreateWithBlock("SynclockHotplug" as CFString, &client) { _ in
+            DispatchQueue.main.async(execute: onChange)
+        }
+        guard status == noErr else { throw SetupError.clientCreate(status) }
+    }
+
+    deinit {
+        if client != 0 { MIDIClientDispose(client) }
+    }
+}

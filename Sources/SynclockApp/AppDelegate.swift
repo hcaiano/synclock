@@ -48,7 +48,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                                                         userDriverDelegate: nil)
     }
 
-    /// The B "Pulse Path" template glyph from the app bundle, falling back to an
+    /// The locked app template glyph from the app bundle, falling back to an
     /// SF Symbol when running outside a bundle (e.g. `swift run`).
     private func menubarGlyph(playing: Bool) -> NSImage? {
         let name = playing ? "menubar-playing" : "menubar-idle"

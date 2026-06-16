@@ -32,4 +32,4 @@ Native, precise, calm. Voice is quiet and exact — it states facts (BPM, mode, 
 - VoiceOver labels on every control, especially device rows and transport state (announce "Playing, 122.5 BPM, Following Link" not just icon state).
 - Do not encode device/sync status by color alone — pair the status dot with shape/label (active/connected/missing).
 - Respect Reduce Motion: the pulse and any transitions degrade to a non-animated state indicator.
-- Contrast ≥4.5:1 for all text including secondary labels; the #2F6BFF accent only on active/selected/primary, never as low-contrast body text.
+- Contrast ≥4.5:1 for all text including secondary labels; the Fresh Mint `#16C79A` accent only on active/selected/primary, never as low-contrast body text.

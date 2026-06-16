@@ -1,9 +1,10 @@
 import AppKit
 
 /// Synclock palette + metrics, from DESIGN.md. Restrained: neutral surfaces,
-/// one accent (#2F6BFF) reserved for active/selected/primary + the pulse.
+/// one Fresh Mint accent reserved for active/selected/primary + the pulse.
 enum Theme {
-    static let accent = NSColor(srgbRed: 0xFF/255, green: 0x5C/255, blue: 0x57/255, alpha: 1) // Pulse Coral
+    static let accent = NSColor(srgbRed: 0x16/255, green: 0xC7/255, blue: 0x9A/255, alpha: 1) // Fresh Mint
+    static let inkOnAccent = NSColor(srgbRed: 0x0E/255, green: 0x14/255, blue: 0x11/255, alpha: 1) // dark ink for bright mint fills
     static let ink = NSColor(srgbRed: 0xF2/255, green: 0xF4/255, blue: 0xF0/255, alpha: 1)
     static let inkSecondary = NSColor(white: 1, alpha: 0.72)
     static let inkMuted = NSColor(white: 1, alpha: 0.45)

@@ -44,8 +44,9 @@ branding/                    (icon assets from Codex)
 ```
 
 ## Icon spec (Codex, bound to Synclock)
-- App icon 1024²: graphite rounded square (#24272C→#111316), centered timing ring (#F2F4F0, ~690px dia, 42px stroke), 24 subtle outer micro-ticks (every 6th longer), one #2F6BFF accent tick @12 o'clock, central pulse hub + needle tilted ~10°. No letters/DIN/waveforms/knobs. Export full .appiconset.
-- Menubar glyph 18×18pt template (isTemplate mono), 1.5pt rounded stroke, ring + 12-o'clock stem + tiny 3/9 ticks; reads at 16px; idle + playing variants.
+- Current locked identity: **A Tempo Dot** from `branding/explorations-v2/a-tempo-dot`, replacing the earlier dark B Pulse Path direction after Henrique asked for a friendlier, lighter, simpler icon.
+- App icon: light/cream macOS rounded square with a coral tempo/downbeat dot and tiny 12-o'clock pulse stem. Accent = Pulse Coral `#FF5C57`; no letters, waveforms, knobs, or dark graphite tile.
+- Menubar glyph: monochrome template ring/dot/stem mark; reads at 16px; idle + playing variants.
 
 ## Name vetting (iTunes Search API + web)
 - ✅ Synclock — clean App Store + category. WINNER.
@@ -54,7 +55,7 @@ branding/                    (icon assets from Codex)
 
 ## UI/UX design (impeccable, product register)
 - Strategy → `PRODUCT.md` (3-word brand: trustworthy/exact/invisible; 5 design principles; anti-refs: Electron density, mini-DAW clutter, AI-slop, config-as-punishment).
-- Visual system → `DESIGN.md` (dark vibrancy popover, Restrained color, #2F6BFF accent only for active/selected/primary + pulse, SF Pro, tabular numerals, status never color-only).
+- Visual system → `DESIGN.md` (dark vibrancy popover, Restrained color, Pulse Coral `#FF5C57` accent only for active/selected/primary + pulse, SF Pro, tabular numerals, status never color-only).
 - Mockup → `design/synclock-mockup.html` (+ `.png` render). Two surfaces: popover (BPM/nudge/tap/transport/Link segmented/output-health/pulse) + Preferences→Devices gear table (per-device enable/nickname/delay/transport/status, virtual port pinned, NEW badge for new gear defaulting OFF, Minilogue=remembered-missing amber, Panic). Passed impeccable hook (no anti-patterns; fixed bounce-easing + em-dash overuse).
 - The pulse = the one signature delight; everything else defers to macOS idiom ("feels like Apple shipped it").
 
@@ -65,7 +66,8 @@ branding/                    (icon assets from Codex)
 - **C Phase Grid** — phase arc + concentric sync rings + sweep. Best literal Link/product fit (Codex's top pick) but reads radar/sonar at a glance.
 - **D Link Nodes** — synced peers/routing; risks generic-network look.
 - **E Metronome Abstract** — reduced metronome; musical but least uniquely Synclock.
-DECISION — **SIGNED OFF by Henrique 2026-06-16: B "Pulse Path" is the locked primary identity**, C "Phase Grid" alternate. Cofounders Claude + Codex both recommended B; founder confirmed. NOTE: existing `branding/Synclock.appiconset` (direction-A graphite clock) is SUPERSEDED — regenerate the production .appiconset + menubar glyph + wordmark from B before packaging, and reuse that identity on the Phase 10 marketing site. Locked refinements: centered blue dot = downbeat (not decoration); pulse spike = beat event (not generic waveform); ring stays quiet so pulse owns the mark; C's blue phase-arc reserved for MOTION (in-app Link-phase sweep/fill, hover/active, marketing demo); keep graphite + off-white + #2F6BFF (Lineup family). Plan also gained 5 Codex edits (offset stacking rule, 4-state gear model, hotplug confident-ID-only, Panic safety scope, brand-asset licensing) — GOAL_PROMPT.md locked from both review sides.
+SUPERSEDED DECISION — B "Pulse Path" was initially signed off, then retired after Henrique rejected it as too dark/complex.
+CURRENT DECISION — **SIGNED OFF by Henrique 2026-06-16: A "Tempo Dot" is the locked primary identity**, Pulse Coral `#FF5C57` is the accent, and the production assets in `branding/` derive from `branding/explorations-v2/a-tempo-dot`. The new identity is live across app bundle, menubar glyph, marketing site, favicon, wordmark, and OG image. Earlier B/C exploration remains only as reference history.
 
 ## Competitive landscape
 E-RM MIDIclock (hardware ~€300), multiclock, midiclock.com (sw), Omniclock plugin, CLOCKstep:MULTI. Wedge = free + native + findable + Link.

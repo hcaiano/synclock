@@ -54,9 +54,10 @@ final class PreferencesWindowController: NSWindowController {
 
 // MARK: - Devices tab (the gear table)
 
-final class DevicesViewController: NSViewController, NSTableViewDataSource, NSTableViewDelegate {
+final class DevicesViewController: NSViewController, NSTableViewDataSource, NSTableViewDelegate, NSTextFieldDelegate {
     private let engine: SyncEngine?
     private let table = NSTableView()
+    private let emptyLabel = NSTextField(labelWithString: "No MIDI outputs found. Synclock still creates a virtual source named Synclock for DAWs and Link-aware apps.")
     private var rows: [OutputSettings] = []
 
     init(engine: SyncEngine?) { self.engine = engine; super.init(nibName: nil, bundle: nil) }
@@ -85,6 +86,12 @@ final class DevicesViewController: NSViewController, NSTableViewDataSource, NSTa
         scroll.documentView = table
         scroll.hasVerticalScroller = true
         scroll.translatesAutoresizingMaskIntoConstraints = false
+        emptyLabel.font = .systemFont(ofSize: 12)
+        emptyLabel.textColor = .secondaryLabelColor
+        emptyLabel.alignment = .center
+        emptyLabel.lineBreakMode = .byWordWrapping
+        emptyLabel.maximumNumberOfLines = 2
+        emptyLabel.translatesAutoresizingMaskIntoConstraints = false
 
         let panic = NSButton(title: "Panic — Stop & All Notes Off", target: self, action: #selector(panic))
         panic.bezelStyle = .rounded
@@ -97,13 +104,16 @@ final class DevicesViewController: NSViewController, NSTableViewDataSource, NSTa
         header.orientation = .vertical; header.alignment = .leading; header.spacing = 2
         header.translatesAutoresizingMaskIntoConstraints = false
 
-        container.addSubview(header); container.addSubview(scroll); container.addSubview(buttons)
+        container.addSubview(header); container.addSubview(scroll); container.addSubview(emptyLabel); container.addSubview(buttons)
         NSLayoutConstraint.activate([
             header.topAnchor.constraint(equalTo: container.topAnchor, constant: 16),
             header.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 20),
             scroll.topAnchor.constraint(equalTo: header.bottomAnchor, constant: 12),
             scroll.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 20),
             scroll.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -20),
+            emptyLabel.centerXAnchor.constraint(equalTo: scroll.centerXAnchor),
+            emptyLabel.centerYAnchor.constraint(equalTo: scroll.centerYAnchor),
+            emptyLabel.widthAnchor.constraint(lessThanOrEqualTo: scroll.widthAnchor, constant: -40),
             buttons.topAnchor.constraint(equalTo: scroll.bottomAnchor, constant: 12),
             buttons.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 20),
             buttons.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -20),
@@ -114,6 +124,7 @@ final class DevicesViewController: NSViewController, NSTableViewDataSource, NSTa
 
     func reload() {
         rows = engine?.sortedDevices ?? []
+        emptyLabel.isHidden = !rows.isEmpty
         table.reloadData()
     }
 
@@ -128,7 +139,14 @@ final class DevicesViewController: NSViewController, NSTableViewDataSource, NSTa
             let status = engine?.status(for: device.uniqueID) ?? .off
             return NSTextField(labelWithString: status.label)
         case "device":
-            return NSTextField(labelWithString: device.displayName)
+            let field = NSTextField(string: device.displayName)
+            field.isBordered = false
+            field.drawsBackground = false
+            field.isEditable = true
+            field.delegate = self
+            field.tag = Int(device.uniqueID)
+            field.setAccessibilityLabel("Device nickname")
+            return field
         case "enabled":
             let cb = NSButton(checkboxWithTitle: "", target: self, action: #selector(toggleEnabled(_:)))
             cb.state = device.enabled ? .on : .off
@@ -157,6 +175,16 @@ final class DevicesViewController: NSViewController, NSTableViewDataSource, NSTa
     @objc private func changeDelay(_ s: NSStepper) { engine?.setDeviceSyncDelay(ms: s.doubleValue, id: Int32(s.tag)); reload() }
     @objc private func panic() { engine?.panic() }
     @objc private func refresh() { engine?.refreshDevices(); reload() }
+
+    func controlTextDidEndEditing(_ obj: Notification) {
+        guard let field = obj.object as? NSTextField else { return }
+        let id = Int32(field.tag)
+        guard let device = rows.first(where: { $0.uniqueID == id }) else { return }
+        let trimmed = field.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        let nickname = (trimmed.isEmpty || trimmed == device.systemName) ? "" : trimmed
+        engine?.setDeviceNickname(nickname, id: id)
+        reload()
+    }
 }
 
 // MARK: - General tab

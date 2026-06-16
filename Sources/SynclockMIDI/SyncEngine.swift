@@ -45,6 +45,8 @@ public final class SyncEngine {
     private var gear: GearModel
     private let link: OpaquePointer?
     private var linkCallbackContext: UnsafeMutableRawPointer?
+    private var hotplugMonitor: MIDIHotplugMonitor?
+    private var pendingHotplugRefresh: DispatchWorkItem?
 
     private var discovered: [DiscoveredOutput] = []
     private(set) public var transport: TransportState = .stopped
@@ -65,6 +67,7 @@ public final class SyncEngine {
         }
         applyLinkMode(loaded.linkMode, at: HostTime.nowNanos(), persistSettings: false)
         refreshDevices()
+        hotplugMonitor = try? MIDIHotplugMonitor { [weak self] in self?.scheduleHotplugRefresh() }
         // Honour clock-while-stopped on launch (continuous F8 even when stopped).
         updateClockRunning(at: HostTime.nowNanos())
     }
@@ -84,6 +87,13 @@ public final class SyncEngine {
         gear.reconcile(present: discovered.map { DiscoveredEndpoint(uniqueID: $0.uniqueID, name: $0.name) })
         rebuildRoutes()
         persist()
+    }
+
+    private func scheduleHotplugRefresh() {
+        pendingHotplugRefresh?.cancel()
+        let work = DispatchWorkItem { [weak self] in self?.refreshDevices() }
+        pendingHotplugRefresh = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: work)
     }
 
     private func rebuildRoutes() {

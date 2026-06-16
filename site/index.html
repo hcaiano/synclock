@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Synclock — Master MIDI clock + Ableton Link for macOS</title>
-<meta name="description" content="A native macOS menubar app that syncs all your MIDI gear to one tight clock, with Ableton Link, without opening a DAW. Free and open source.">
+<meta name="description" content="A tiny macOS menu bar app that keeps all your MIDI gear and Ableton Link in perfect time — no DAW required. Free and open source.">
 <link rel="canonical" href="https://synclock.caiano.com/">
 <meta property="og:title" content="Synclock — MIDI Clock & Link for Mac">
-<meta property="og:description" content="Sync your gear to one tight clock, without a DAW. Native macOS menubar app with Ableton Link. Free & open source.">
+<meta property="og:description" content="Keep all your gear in perfect time, without a DAW. A native macOS menu bar app with Ableton Link. Free & open source.">
 <meta property="og:url" content="https://synclock.caiano.com/">
 <meta property="og:image" content="https://synclock.caiano.com/assets/og.png">
 <meta property="og:type" content="website">
@@ -17,98 +17,140 @@
 <link rel="apple-touch-icon" href="/assets/icon-256.png">
 <style>
   :root{
-    --bg:#121319; --bg-2:#181a20; --surface:#1f222a; --hairline:rgba(255,255,255,0.08);
-    --ink:#F2F4F0; --ink-2:#aeb3bd; --ink-muted:#7e828c; --accent:#FF5C57;
+    --bg:#0F1014; --bg-2:#14161c; --surface:#1d2027; --surface-2:#23262e;
+    --hairline:rgba(255,255,255,0.08); --hairline-2:rgba(255,255,255,0.12);
+    --ink:#F3F5F1; --ink-2:#b6bbc4; --ink-muted:#7c818b;
+    --accent:#16C79A; --accent-ink:#0E1411; --amber:#E2A23B;
     --font:-apple-system,"SF Pro Text","SF Pro Display",system-ui,"Segoe UI",sans-serif;
     --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,monospace;
-    --maxw:1080px;
+    --maxw:1000px;
+    --e-out:cubic-bezier(.16,1,.3,1);
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
-  body{
-    font-family:var(--font);background:var(--bg);color:var(--ink);
-    -webkit-font-smoothing:antialiased;line-height:1.55;overflow-x:hidden;
-  }
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);
+    -webkit-font-smoothing:antialiased;line-height:1.55;overflow-x:hidden}
   a{color:inherit;text-decoration:none}
   .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
   .accent{color:var(--accent)}
 
   /* nav */
   nav{position:sticky;top:0;z-index:10;backdrop-filter:blur(16px);
-    background:rgba(18,19,25,0.72);border-bottom:1px solid var(--hairline)}
-  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:16px}
-  .brand img{width:26px;height:26px;border-radius:7px}
-  .nav-links{display:flex;align-items:center;gap:28px;font-size:14px;color:var(--ink-2)}
+    background:rgba(15,16,20,0.72);border-bottom:1px solid var(--hairline)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:58px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15.5px}
+  .brand img{width:24px;height:24px;border-radius:6px}
+  .nav-links{display:flex;align-items:center;gap:26px;font-size:14px;color:var(--ink-2)}
   .nav-links a:hover{color:var(--ink)}
-  .btn{display:inline-flex;align-items:center;gap:8px;border-radius:10px;padding:9px 16px;
-    font-size:14px;font-weight:600;transition:.18s cubic-bezier(.22,1,.36,1)}
-  .btn-primary{background:var(--accent);color:#fff;box-shadow:0 6px 18px rgba(255,92,87,0.3)}
-  .btn-primary:hover{filter:brightness(1.07);transform:translateY(-1px)}
-  .btn-ghost{border:1px solid var(--hairline);color:var(--ink-2)}
+  .btn{display:inline-flex;align-items:center;gap:8px;border-radius:9px;padding:9px 16px;
+    font-size:14px;font-weight:600;transition:background .18s var(--e-out),color .18s var(--e-out),border-color .18s var(--e-out)}
+  .btn-primary{background:var(--accent);color:var(--accent-ink)}
+  .btn-primary:hover{background:#1ddcab}
+  .btn-ghost{border:1px solid var(--hairline-2);color:var(--ink-2)}
   .btn-ghost:hover{color:var(--ink);background:var(--surface)}
   @media(max-width:720px){.nav-links a:not(.btn){display:none}}
 
-  /* hero */
-  .hero{position:relative;padding:96px 0 64px;overflow:hidden}
-  .hero::before{content:"";position:absolute;top:-200px;left:50%;transform:translateX(-50%);
-    width:900px;height:600px;background:radial-gradient(50% 50% at 50% 50%,rgba(255,92,87,0.18),transparent 70%);
-    pointer-events:none}
-  .hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center;position:relative}
-  .hero h1{font-size:clamp(34px,5vw,58px);line-height:1.04;letter-spacing:-0.03em;font-weight:600;
-    text-wrap:balance}
-  .hero p.lead{margin-top:20px;font-size:18px;color:var(--ink-2);max-width:30ch}
-  .hero .cta{margin-top:28px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  /* hero — product-led, centered */
+  .hero{padding:84px 0 0;text-align:center}
+  .hero h1{font-size:clamp(36px,6vw,60px);line-height:1.02;letter-spacing:-0.035em;
+    font-weight:650;text-wrap:balance;max-width:16ch;margin:0 auto}
+  .hero p.lead{margin:22px auto 0;font-size:clamp(16px,2.2vw,19px);color:var(--ink-2);
+    max-width:52ch;text-wrap:pretty}
+  .hero .cta{margin-top:30px;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap}
   .hero .meta{margin-top:16px;font-size:13px;color:var(--ink-muted)}
-  .shot{justify-self:center;width:316px;max-width:100%;border-radius:18px;
-    box-shadow:0 30px 70px rgba(0,0,0,0.55);border:1px solid var(--hairline)}
-  @media(max-width:860px){.hero .wrap{grid-template-columns:1fr;text-align:center}
-    .hero p.lead{margin-inline:auto}.hero .cta{justify-content:center}}
+
+  /* the product visual: just the widget, like the mockup. no chrome. */
+  .stage{margin:60px auto 0;display:flex;justify-content:center;padding:0 24px;position:relative}
+  .stage::before{content:"";position:absolute;top:6%;left:50%;transform:translateX(-50%);
+    width:min(560px,90%);height:74%;pointer-events:none;z-index:0;
+    background:radial-gradient(60% 60% at 50% 35%,rgba(22,199,154,0.16),transparent 70%)}
+  .pop{position:relative;z-index:1;width:340px;border-radius:17px;
+    background:rgba(26,28,34,0.92);backdrop-filter:blur(44px) saturate(160%);
+    border:1px solid var(--hairline-2);
+    box-shadow:0 40px 90px rgba(0,0,0,0.55),0 8px 24px rgba(0,0,0,.4);
+    text-align:left;overflow:hidden;
+    animation:rise .8s var(--e-out) both}
+  @keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+  .pop::before{content:"";position:absolute;inset:0 0 auto 0;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,0.16),transparent)}
+  .pp{padding:15px 15px 13px}
+  .psep{height:1px;background:var(--hairline);margin:0 15px}
+  .trow{display:flex;align-items:flex-end;justify-content:space-between}
+  .bpm{display:flex;align-items:baseline;gap:7px}
+  .bpm b{font-size:40px;font-weight:550;line-height:.9;letter-spacing:-0.02em;
+    font-variant-numeric:tabular-nums;color:var(--ink)}
+  .bpm i{font-style:normal;font-size:11px;font-weight:600;color:var(--ink-muted);letter-spacing:.04em}
+  .nudge{display:flex;flex-direction:column;gap:4px}
+  .nudge span{width:28px;height:21px;border-radius:6px;border:1px solid var(--hairline-2);
+    background:var(--surface);color:var(--ink-2);font-size:11px;display:flex;align-items:center;justify-content:center}
+  .transport{display:flex;gap:9px;margin-top:13px}
+  .play{flex:1;height:38px;border-radius:10px;background:var(--accent);color:var(--accent-ink);
+    font-size:13.5px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px}
+  .ghost{height:38px;padding:0 13px;border-radius:10px;font-size:12.5px;font-weight:500;
+    background:var(--surface);color:var(--ink-2);border:1px solid var(--hairline-2);
+    display:flex;align-items:center;gap:6px}
+  .blabel{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .blabel .t{font-size:11px;font-weight:600;color:var(--ink-muted);letter-spacing:.02em}
+  .peers{font-size:11px;color:var(--ink-2);display:flex;align-items:center;gap:6px}
+  .peers .live{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px rgba(22,199,154,0.18)}
+  .seg{display:flex;background:var(--surface);border-radius:9px;padding:3px;gap:3px;border:1px solid var(--hairline)}
+  .seg span{flex:1;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:500;color:var(--ink-2)}
+  .seg span.on{background:var(--accent);color:var(--accent-ink);font-weight:600}
+  .hint{margin-top:8px;font-size:11px;color:var(--ink-muted);line-height:1.35}
+  .hint b{color:var(--ink-2);font-weight:600}
+  .health{display:flex;align-items:center;justify-content:space-between;border-radius:9px;
+    padding:9px 11px;background:var(--surface);border:1px solid var(--hairline)}
+  .health .l{display:flex;align-items:center;gap:9px}
+  .health .pulse{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+  .health .s{font-size:12px;color:var(--ink)}.health .s em{font-style:normal;color:var(--ink-muted)}
+  .health .chev{color:var(--ink-muted);font-size:14px}
+  .pfoot{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;
+    color:var(--ink-muted);font-size:11.5px}
+
+  @media(max-width:560px){.pop{width:100%;max-width:330px}.stage{padding:0 16px}}
 
   /* sections */
-  section{padding:72px 0}
+  section{padding:88px 0}
   .section-bg{background:var(--bg-2);border-block:1px solid var(--hairline)}
-  h2{font-size:clamp(26px,3.4vw,38px);letter-spacing:-0.02em;font-weight:600;text-wrap:balance}
-  .lede{margin-top:14px;color:var(--ink-2);font-size:17px;max-width:60ch}
+  h2{font-size:clamp(25px,3.4vw,34px);letter-spacing:-0.02em;font-weight:640;text-wrap:balance}
+  .lede{margin-top:14px;color:var(--ink-2);font-size:17px;max-width:56ch;text-wrap:pretty}
 
-  /* problem */
-  .problem .wrap{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
-  .problem .old{background:var(--surface);border:1px solid var(--hairline);border-radius:14px;padding:22px;
-    font-family:var(--mono);font-size:13px;color:var(--ink-muted);line-height:1.7}
-  .problem .old b{color:var(--accent)}
-  @media(max-width:760px){.problem .wrap{grid-template-columns:1fr}}
+  /* how it works — plain numbered steps, no cards */
+  .how .wrap{max-width:760px}
+  .steps{margin-top:44px;display:flex;flex-direction:column;gap:2px}
+  .step{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:baseline;
+    padding:26px 0;border-top:1px solid var(--hairline)}
+  .step:last-child{border-bottom:1px solid var(--hairline)}
+  .step .n{font-size:15px;font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums}
+  .step h3{font-size:19px;font-weight:600}
+  .step p{margin-top:7px;color:var(--ink-2);font-size:15px;max-width:50ch}
 
-  /* steps */
-  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:40px}
-  .step{background:var(--surface);border:1px solid var(--hairline);border-radius:14px;padding:24px}
-  .step .n{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:600}
-  .step h3{margin-top:10px;font-size:18px;font-weight:600}
-  .step p{margin-top:8px;color:var(--ink-2);font-size:14px}
-  @media(max-width:760px){.steps{grid-template-columns:1fr}}
-
-  /* features — deliberately varied, not an identical grid */
-  .features{display:grid;grid-template-columns:1.4fr 1fr;gap:22px;margin-top:40px}
-  .feat{background:var(--surface);border:1px solid var(--hairline);border-radius:16px;padding:28px}
-  .feat.tall{grid-row:span 2;display:flex;flex-direction:column;justify-content:space-between}
-  .feat h3{font-size:19px;font-weight:600}
-  .feat p{margin-top:10px;color:var(--ink-2);font-size:14.5px}
-  .feat .big-num{font-family:var(--mono);font-size:40px;font-weight:600;letter-spacing:-0.02em;margin-top:18px}
-  .feat .big-num small{font-size:14px;color:var(--ink-muted);font-weight:400}
-  .modes{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
-  .mode{font-size:12.5px;padding:6px 12px;border-radius:8px;border:1px solid var(--hairline);color:var(--ink-2)}
-  .mode.on{background:var(--accent);color:#fff;border-color:transparent}
-  @media(max-width:760px){.features{grid-template-columns:1fr}.feat.tall{grid-row:auto}}
+  /* features — two honest rows, varied weight, no metric tile */
+  .feat-list{margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:40px 56px}
+  .feat h3{font-size:18px;font-weight:600;display:flex;align-items:center;gap:9px}
+  .feat h3 .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none}
+  .feat p{margin-top:9px;color:var(--ink-2);font-size:15px;max-width:42ch}
+  .modes{display:inline-flex;gap:6px;margin-top:12px}
+  .modes span{font-size:12px;padding:5px 11px;border-radius:7px;border:1px solid var(--hairline-2);color:var(--ink-2)}
+  .modes span.on{background:var(--accent);color:var(--accent-ink);border-color:transparent;font-weight:600}
+  @media(max-width:680px){.feat-list{grid-template-columns:1fr;gap:34px}}
 
   /* download */
   .download{text-align:center}
   .download .wrap{display:flex;flex-direction:column;align-items:center}
-  .download img{width:96px;height:96px;border-radius:22px;box-shadow:0 18px 40px rgba(0,0,0,0.5)}
-  .download .cta{margin-top:26px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
-  .pill{font-size:12px;color:var(--ink-muted);margin-top:18px}
+  .download h2{margin-bottom:0}
+  .download .cta{margin-top:28px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+  .pill{font-size:12.5px;color:var(--ink-muted);margin-top:20px}
 
   footer{padding:40px 0;border-top:1px solid var(--hairline);color:var(--ink-muted);font-size:13px}
   footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
   footer a:hover{color:var(--ink-2)}
+
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important}
+    .pop{opacity:1!important;transform:none!important}
+  }
 </style>
 </head>
 <body>
@@ -123,79 +165,93 @@
   </div>
 </div></nav>
 
-<header class="hero"><div class="wrap">
-  <div>
-    <h1>The master clock for your gear. <span class="accent">No DAW required.</span></h1>
-    <p class="lead">Synclock is a tiny macOS menubar app that locks all your MIDI hardware to one tight clock, and to Ableton Link, without booting a heavy DAW.</p>
+<header class="hero">
+  <div class="wrap">
+    <h1>Lock your whole rig to one beat.</h1>
+    <p class="lead">Synclock is a tiny menu bar app that keeps your synths, drum machines, and Ableton Link in perfect time. Set a tempo, hit play, and get back to making music. No DAW required.</p>
     <div class="cta">
       <a class="btn btn-primary" href="#download">Download for macOS</a>
       <a class="btn btn-ghost" href="https://github.com/hcaiano/synclock">View source</a>
     </div>
-    <p class="meta">Free &amp; open source · macOS 13+ · Apple Silicon &amp; Intel</p>
+    <p class="meta">Free &amp; open source · macOS 13+ · Apple Silicon</p>
   </div>
-  <img class="shot" src="/assets/popover.png" alt="The Synclock menubar popover showing BPM, transport, Ableton Link mode and output health.">
-</div></header>
 
-<section class="problem"><div class="wrap">
-  <div>
-    <h2>Your gear should just lock.</h2>
-    <p class="lede">Most ways to clock hardware mean opening a full DAW, fighting plugin latency, or buying a dedicated box. Synclock lives in the menu bar and does one thing exceptionally well: it keeps everything in time.</p>
-  </div>
-  <div class="old">
-    // the old way: a clock pulse fired from a<br>
-    // JavaScript timer in an Electron app<br>
-    setInterval(sendClock, interval); <span style="color:#E2A23B">// jitter</span><br><br>
-    // Synclock: a hand-owned scheduler emits<br>
-    // <b>timestamped CoreMIDI</b>, delivered by the OS<br>
-    output.schedule(tick, hostTime); <b>// tight</b>
-  </div>
-</div></section>
-
-<section id="how" class="section-bg"><div class="wrap">
-  <h2>How it works</h2>
-  <p class="lede">Three moves from the menu bar.</p>
-  <div class="steps">
-    <div class="step"><div class="n">Set</div><h3>Set the tempo</h3>
-      <p>Decimal BPM, fine nudge, and tap tempo. Synclock is the heartbeat of the rig.</p></div>
-    <div class="step"><div class="n">Choose</div><h3>Choose your gear</h3>
-      <p>Every MIDI output is discovered automatically. Pick what syncs, nickname it, and dial in a per-device delay. New gear stays off until you say so.</p></div>
-    <div class="step"><div class="n">Play</div><h3>Press play, or join Link</h3>
-      <p>Send Start/Stop to your hardware, or follow an Ableton Link session so your laptops and apps share the same beat.</p></div>
-  </div>
-</div></section>
-
-<section id="features"><div class="wrap">
-  <h2>Built to be trusted live.</h2>
-  <div class="features">
-    <div class="feat tall">
-      <div>
-        <h3>A clock you can feel</h3>
-        <p>A hand-owned, high-priority scheduler emits timestamped CoreMIDI so the operating system delivers each pulse precisely. We measure it, and report honest numbers.</p>
+  <div class="stage">
+      <div class="pop">
+        <div class="pp">
+          <div class="trow">
+            <div class="bpm"><b>122.5</b><i>BPM</i></div>
+            <div class="nudge"><span>▲</span><span>▼</span></div>
+          </div>
+          <div class="transport">
+            <button class="play"><svg width="12" height="13" viewBox="0 0 12 13" fill="currentColor"><rect x="1" y="1" width="3.6" height="11" rx="1"/><rect x="7.4" y="1" width="3.6" height="11" rx="1"/></svg> Stop</button>
+            <button class="ghost"><svg width="12" height="12" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.5 1.5v5M3 3.2A5 5 0 1 0 10 3.2"/></svg> Tap</button>
+          </div>
+        </div>
+        <div class="psep"></div>
+        <div class="pp">
+          <div class="blabel"><span class="t">ABLETON LINK</span><span class="peers"><span class="live"></span>3 peers</span></div>
+          <div class="seg"><span>Free</span><span class="on">Follow</span><span>Lead</span></div>
+          <div class="hint"><b>Following Link.</b> Tempo and phase track the session.</div>
+        </div>
+        <div class="psep"></div>
+        <div class="pp">
+          <div class="health"><div class="l"><span class="pulse"></span><span class="s">3 outputs in time <em>· 1 offline</em></span></div><span class="chev">›</span></div>
+        </div>
+        <div class="psep"></div>
+        <div class="pfoot"><span>⚙ Preferences…</span><span>⏻ Quit</span></div>
       </div>
-      <div class="big-num">0.05<small> ms · p99 jitter @ 120 BPM</small></div>
+  </div>
+</header>
+
+<section id="how" class="how"><div class="wrap">
+  <h2>Three moves from the menu bar.</h2>
+  <p class="lede">No project files, no plugin chains, no waiting for a DAW to boot.</p>
+  <div class="steps">
+    <div class="step"><div class="n">1</div><div>
+      <h3>Set the tempo</h3>
+      <p>Type a BPM, nudge it, or tap it in. Synclock becomes the heartbeat the whole rig follows.</p>
+    </div></div>
+    <div class="step"><div class="n">2</div><div>
+      <h3>Pick your gear</h3>
+      <p>Every connected device shows up automatically. Choose what gets the clock, give it a nickname, and nudge its timing if it runs early or late. New gear stays silent until you say so.</p>
+    </div></div>
+    <div class="step"><div class="n">3</div><div>
+      <h3>Press play, or join Link</h3>
+      <p>Send start and stop to your hardware, or follow an Ableton Link session so your laptop, apps, and gear all share the same beat.</p>
+    </div></div>
+  </div>
+</div></section>
+
+<section id="features" class="section-bg"><div class="wrap">
+  <h2>Quietly does one thing perfectly.</h2>
+  <p class="lede">It sits in the menu bar and stays out of the way. You only notice it because everything is finally in time.</p>
+  <div class="feat-list">
+    <div class="feat">
+      <h3><span class="dot"></span>Rock-solid timing</h3>
+      <p>The clock holds tight under load, so your groove never drifts mid-session. We obsess over the milliseconds so you don't have to.</p>
     </div>
     <div class="feat">
-      <h3>Works with any gear</h3>
-      <p>Grooveboxes, synths, drum machines, interfaces — auto-discovered, with per-device enable, sync delay, and clock-vs-transport control.</p>
+      <h3><span class="dot"></span>Works with any gear</h3>
+      <p>Grooveboxes, synths, drum machines, interfaces. If it speaks MIDI, it shows up. Enable each one, nickname it, and dial in its timing.</p>
     </div>
     <div class="feat">
-      <h3>Ableton Link, first class</h3>
-      <div class="modes"><span class="mode on">Free</span><span class="mode">Follow</span><span class="mode">Lead</span></div>
-      <p>Lead the session, follow it, or ignore it. The active mode is always visible.</p>
+      <h3><span class="dot"></span>Ableton Link, built in</h3>
+      <div class="modes"><span class="on">Free</span><span>Follow</span><span>Lead</span></div>
+      <p>Lead the session, follow it, or run on your own. The active mode is always one glance away.</p>
     </div>
     <div class="feat">
-      <h3>Free &amp; open source</h3>
-      <p>No account, no subscription, no telemetry. GPLv2 — the source is yours to read and build.</p>
+      <h3><span class="dot"></span>Free &amp; open source</h3>
+      <p>No account, no subscription, no telemetry. GPLv2: the source is yours to read, build, and trust.</p>
     </div>
   </div>
 </div></section>
 
-<section id="download" class="section-bg download"><div class="wrap">
-  <img src="/assets/icon-512.png" alt="Synclock app icon">
-  <h2 style="margin-top:24px">Get Synclock</h2>
+<section id="download" class="download"><div class="wrap">
+  <h2>Get Synclock</h2>
   <p class="lede" style="text-align:center">A signed, notarized build for macOS 13 and later. Free, forever.</p>
   <div class="cta">
-    <a class="btn btn-primary" href="https://github.com/hcaiano/synclock/releases">Download the latest release</a>
+    <a class="btn btn-primary" href="https://github.com/hcaiano/synclock/releases">Download for macOS</a>
     <a class="btn btn-ghost" href="https://github.com/hcaiano/synclock">Build from source</a>
   </div>
   <p class="pill">If it earns a spot in your setup, you can <a class="accent" href="https://buymeacoffee.com/caiano">buy me a coffee</a>.</p>
