@@ -3,7 +3,7 @@
 > Visual system for Synclock. Native macOS idiom — this maps to AppKit, the HTML mockup only exists to iterate the look. SF Pro, vibrancy, standard controls.
 
 ## Theme
-Primary context is a **dark vibrancy popover** (producers work in dim studios / on stage; the graphite icon lives here). A light-appearance variant follows the same tokens via macOS semantic colors. Color strategy: **Restrained** — neutral surfaces + a single `#2F6BFF` accent reserved for active/selected/primary and the live pulse. Nothing decorative.
+Primary context is a **dark vibrancy popover** (producers work in dim studios / on stage; the graphite icon lives here). A light-appearance variant follows the same tokens via macOS semantic colors. Color strategy: **Restrained** — neutral surfaces + a single `#FF5C57` accent reserved for active/selected/primary and the live pulse. Nothing decorative.
 
 ## Color (dark popover; OKLCH values, rendered over NSVisualEffectView vibrancy)
 | Role | Value | Use |
@@ -14,7 +14,7 @@ Primary context is a **dark vibrancy popover** (producers work in dim studios / 
 | `--ink` | `oklch(0.96 0.004 110)` (#F2F4F0) | primary text, BPM |
 | `--ink-secondary` | `oklch(0.78 0.004 110)` | labels (≥4.5:1) |
 | `--ink-muted` | `oklch(0.62 0.004 110)` | tertiary, units |
-| `--accent` | `oklch(0.58 0.20 264)` (#2F6BFF) | active sync, selected mode, primary, pulse |
+| `--accent` | `oklch(0.68 0.19 24)` (#FF5C57, Pulse Coral) | active sync, selected mode, primary, pulse |
 | `--hairline` | `oklch(1 0 0 / 0.08)` | separators |
 | status: active | accent filled dot + "Active" | present, enabled, emitting clock/transport now |
 | status: ready | `--ink-secondary` ring dot + "Ready" | present, enabled, not emitting right now |

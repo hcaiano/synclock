@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<style>
+  :root{
+    --bg: rgba(34,36,42,0.82); --surface:#2c2f36; --surface-2:#34373f; --surface-hover:#3a3e47;
+    --ink:#F2F4F0; --ink-2:#b9bdc4; --ink-muted:#868b94; --accent:#FF5C57;
+    --accent-soft:rgba(255,92,87,0.18); --amber:#E2A23B;
+    --hairline:rgba(255,255,255,0.08); --hairline-strong:rgba(255,255,255,0.12);
+    --font:-apple-system,"SF Pro Text","SF Pro Display","Helvetica Neue",system-ui,sans-serif;
+    --shadow:0 24px 60px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:380px;height:430px}
+  body{font-family:var(--font);-webkit-font-smoothing:antialiased;
+    display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(120% 100% at 30% 10%,#3a3f57 0%,#23252e 50%,#16171d 100%);}
+  .popover{width:316px;border-radius:16px;background:var(--bg);
+    backdrop-filter:blur(40px) saturate(140%);-webkit-backdrop-filter:blur(40px) saturate(140%);
+    border:1px solid var(--hairline-strong);box-shadow:var(--shadow);overflow:hidden;position:relative}
+  .popover::before{content:"";position:absolute;inset:0 0 auto 0;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent)}
+  .pad{padding:16px 16px 14px}
+  .sep{height:1px;background:var(--hairline);margin:0 16px}
+  .tempo-row{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+  .bpm{display:flex;align-items:baseline;gap:8px}
+  .bpm .val{font-family:"SF Pro Display",var(--font);font-size:42px;font-weight:500;line-height:.9;
+    letter-spacing:-0.02em;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .bpm .unit{font-size:12px;font-weight:600;color:var(--ink-muted);letter-spacing:.04em}
+  .nudge{display:flex;flex-direction:column;gap:4px}
+  .nudge button{width:30px;height:22px;border-radius:7px;border:1px solid var(--hairline-strong);
+    background:var(--surface);color:var(--ink-2);font-size:12px;display:flex;align-items:center;justify-content:center}
+  .transport{display:flex;align-items:center;gap:10px;margin-top:14px}
+  .play{flex:1;height:40px;border:none;border-radius:11px;background:var(--accent);color:#fff;font-size:14px;
+    font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;
+    box-shadow:0 1px 0 rgba(255,255,255,0.15) inset,0 6px 16px rgba(255,92,87,0.34)}
+  .ghost{height:40px;padding:0 13px;border-radius:11px;font-size:12.5px;font-weight:500;background:var(--surface);
+    color:var(--ink-2);border:1px solid var(--hairline-strong);display:flex;align-items:center;gap:6px}
+  .taps{margin-top:9px;display:flex;align-items:center;gap:7px;color:var(--ink-muted);font-size:11px}
+  .taps .dots{display:flex;gap:4px}
+  .taps .dots i{width:5px;height:5px;border-radius:50%;background:var(--ink-muted);opacity:.5;display:block}
+  .taps .dots i.on{background:var(--accent);opacity:1}
+  .block-label{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+  .block-label .t{font-size:11px;font-weight:600;color:var(--ink-muted);letter-spacing:.02em}
+  .peers{font-size:11px;color:var(--ink-2);font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:6px}
+  .peers .live{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .segmented{display:flex;background:var(--surface);border-radius:10px;padding:3px;gap:3px;border:1px solid var(--hairline)}
+  .segmented button{flex:1;height:30px;border:none;border-radius:7px;background:transparent;color:var(--ink-2);
+    font-size:12.5px;font-weight:500}
+  .segmented button[aria-selected="true"]{background:var(--accent);color:#fff;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .mode-hint{margin-top:8px;font-size:11px;color:var(--ink-muted);line-height:1.35}
+  .mode-hint b{color:var(--ink-2);font-weight:600}
+  .health{display:flex;align-items:center;justify-content:space-between;border-radius:10px;padding:10px 12px;
+    margin:2px 0;background:var(--surface);border:1px solid var(--hairline)}
+  .health .left{display:flex;align-items:center;gap:10px}
+  .pulse{width:9px;height:9px;border-radius:50%;background:var(--accent);position:relative}
+  .pulse::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:1.5px solid var(--accent);opacity:.5}
+  .health .summary{font-size:12.5px;color:var(--ink)}.health .summary span{color:var(--ink-muted)}
+  .health .chev{color:var(--ink-muted);font-size:15px}
+  .foot{display:flex;align-items:center;justify-content:space-between;padding:10px 14px}
+  .foot button{background:none;border:none;color:var(--ink-muted);font-size:12px;display:flex;align-items:center;gap:6px;
+    padding:4px 6px;border-radius:7px}
+</style></head>
+<body>
+  <div class="popover">
+    <div class="pad">
+      <div class="tempo-row">
+        <div class="bpm"><span class="val">122.5</span><span class="unit">BPM</span></div>
+        <div class="nudge"><button>▲</button><button>▼</button></div>
+      </div>
+      <div class="transport">
+        <button class="play"><svg width="13" height="14" viewBox="0 0 13 14" fill="currentColor"><rect x="1" y="1" width="4" height="12" rx="1"/><rect x="8" y="1" width="4" height="12" rx="1"/></svg> Stop</button>
+        <button class="ghost"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.5 1.5v5M3 3.2A5 5 0 1 0 10 3.2"/></svg> Tap</button>
+      </div>
+      <div class="taps"><span>Tap tempo</span><div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div></div>
+    </div>
+    <div class="sep"></div>
+    <div class="pad">
+      <div class="block-label"><span class="t">ABLETON LINK</span><span class="peers"><span class="live"></span>3 peers</span></div>
+      <div class="segmented"><button>Free</button><button aria-selected="true">Follow</button><button>Lead</button></div>
+      <div class="mode-hint"><b>Following Link.</b> Tempo and phase track the session; local BPM is read-only.</div>
+    </div>
+    <div class="sep"></div>
+    <div class="pad" style="padding-top:12px;padding-bottom:8px">
+      <div class="health"><div class="left"><span class="pulse"></span><span class="summary">3 outputs active <span>· 1 missing</span></span></div><span class="chev">›</span></div>
+    </div>
+    <div class="sep"></div>
+    <div class="foot"><button>⚙ Preferences…</button><button>⏻ Quit</button></div>
+  </div>
+</body></html>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0"
+     xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"
+     xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Synclock Updates</title>
+    <link>https://synclock.caiano.com/</link>
+    <description>Signed Synclock releases for Sparkle.</description>
+    <language>en</language>
+    <dc:creator>Henrique Caiano</dc:creator>
+    <!-- First release item lands here once the notarized DMG is signed with Sparkle's EdDSA key. -->
+  </channel>
+</rss>
