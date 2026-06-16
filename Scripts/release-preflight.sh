@@ -51,6 +51,7 @@ check_command ditto
 check_command security
 check_command trash
 check_command lipo
+check_command xmllint
 
 if xcrun -f iconutil >/dev/null 2>&1; then
   ok "iconutil available through xcrun"
@@ -99,10 +100,12 @@ else
   printf '  Generate or print it with: .build/artifacts/sparkle/Sparkle/bin/generate_keys\n' >&2
 fi
 
-if xmllint --noout "$ROOT/site/appcast.xml" >/dev/null 2>&1; then
-  ok "site/appcast.xml is well-formed XML"
-else
-  fail "site/appcast.xml is not well-formed XML"
+if have xmllint; then
+  if xmllint --noout "$ROOT/site/appcast.xml" >/dev/null 2>&1; then
+    ok "site/appcast.xml is well-formed XML"
+  else
+    fail "site/appcast.xml is not well-formed XML"
+  fi
 fi
 
 if [[ "${ALLOW_DIRTY:-0}" == "1" ]]; then
