@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://synclock.caiano.com/sitemap.xml

@@ -100,3 +100,22 @@
 - Phase 5 committed (463b724). Claude added follow-mode jitter pass (SynclockJitter --follow, 19c5968): 120 BPM following Link p95=0.055ms/p99=0.064ms — as tight as free-run.
 - Also this session: CI, launch-at-login, B menubar glyph bundled, OG/social image, RELEASING.md runbook, popover VoiceOver labels.
 - **STATUS: v1 FEATURE-COMPLETE & VERIFIED across Phases 0-8 + 10. Only Phase 9 (Developer-ID signing + notarize + DMG + Sparkle) remains — blocked solely on Henrique's Apple Developer account (runbook in RELEASING.md).**
+
+## Session 7 — Phase 9 Sparkle wiring + packaging cleanup (Codex)
+- Added Sparkle 2.9.3 as an SPM dependency for `SynclockApp`, per Sparkle's current SPM/AppKit docs.
+- Wired `SPUStandardUpdaterController` in `AppDelegate`; the right-click fallback menu exposes "Check for Updates..." when the bundle has `SUFeedURL` + `SUPublicEDKey`, and shows it disabled in dev/ad-hoc builds without release keys.
+- Updated `Scripts/build-app.sh` to inject Sparkle Info.plist keys only when `SPARKLE_PUBLIC_ED_KEY` is supplied; local builds stay clean, release builds are appcast-ready.
+- Cleaned packaging scripts to use `trash` rather than destructive deletes and to dispose of temporary icon/staging directories.
+- Verified `Scripts/build-app.sh` bundles `Sparkle.framework` under `Contents/Frameworks`, adds the app rpath, and passes `codesign --verify --deep --strict`; `Scripts/make-dmg.sh` creates a DMG that passes `hdiutil verify`; `Scripts/notarize.sh` fails fast on the current ad-hoc app until a Developer ID identity is available.
+- Updated README/RELEASING/task_plan to reflect real Link and Sparkle app wiring.
+
+### Remaining
+- Developer ID Application certificate, notarization credentials, Sparkle EdDSA key, hosted appcast, and final notarized DMG remain external release gates.
+
+## Session 8 — Lineup-style site deployment config (Codex)
+- Mirrored Lineup's site deployment pattern for Synclock: `site/wrangler.toml` with Cloudflare Workers static assets, plus `_headers`, `robots.txt`, `sitemap.xml`, `.assetsignore`, and `site/README.md`.
+- Updated site metadata to use production canonical/OG/Twitter URLs at `https://synclock.caiano.com/` and root-relative asset URLs.
+- Validated without deploying: `cd site && npx --yes wrangler@latest deploy --dry-run` → Wrangler 4.101.0 read the static assets config and exited cleanly.
+
+### Remaining
+- Live deploy/custom domain attach still requires the personal Caiano Cloudflare token/path Claude is handling.
