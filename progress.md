@@ -94,3 +94,9 @@
 ### Remaining
 - Claude review of SyncEngine Phase 5 wiring.
 - Follow-mode jitter pass and external Ableton Live/LinkHut peer smoke test.
+
+## Session 5 (cont.) — Phase 5 verified + closed; v1 feature-complete
+- Codex landed Phase 5 (Link Follow/Lead). Claude verified: 83 unit checks, SynclockFollowCheck (peerCount=1, follow=137, lead=111), reviewed SyncEngine/LinkFollowGrid (main-queue state mutation OK for AppKit; timing path queue-confined + Link captureAppSessionState is thread-safe).
+- Phase 5 committed (463b724). Claude added follow-mode jitter pass (SynclockJitter --follow, 19c5968): 120 BPM following Link p95=0.055ms/p99=0.064ms — as tight as free-run.
+- Also this session: CI, launch-at-login, B menubar glyph bundled, OG/social image, RELEASING.md runbook, popover VoiceOver labels.
+- **STATUS: v1 FEATURE-COMPLETE & VERIFIED across Phases 0-8 + 10. Only Phase 9 (Developer-ID signing + notarize + DMG + Sparkle) remains — blocked solely on Henrique's Apple Developer account (runbook in RELEASING.md).**
