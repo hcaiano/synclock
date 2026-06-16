@@ -70,10 +70,11 @@ let package = Package(
             dependencies: ["SynclockCore", "SynclockMIDI", "AbletonLinkBridge"]
         ),
         // Phase 8 jitter harness: measures inter-tick delivery deviation
-        // (p50/p95/p99) at 120 & 300 BPM, optionally under CPU load.
+        // (p50/p95/p99) at 120 & 300 BPM, optionally under CPU load, and
+        // (--follow) while chasing a real Ableton Link peer.
         .executableTarget(
             name: "SynclockJitter",
-            dependencies: ["SynclockCore", "SynclockMIDI"],
+            dependencies: ["SynclockCore", "SynclockMIDI", "AbletonLinkBridge"],
             linkerSettings: [.linkedFramework("CoreMIDI")]
         ),
     ],
