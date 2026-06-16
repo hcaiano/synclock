@@ -63,6 +63,12 @@ cp "$EX/synclock-icon-512.png"  "$ICONSET/icon_512x512.png"
 cp "$EX/synclock-icon-1024.png" "$ICONSET/icon_512x512@2x.png"
 iconutil -c icns "$ICONSET" -o "$APP/Contents/Resources/Synclock.icns"
 
+echo "› bundling menubar template glyphs (B Pulse Path)"
+for state in idle playing; do
+  cp "$ROOT/branding/menubar/synclock-menubar-$state-18.png" "$APP/Contents/Resources/menubar-$state.png"
+  cp "$ROOT/branding/menubar/synclock-menubar-$state-36.png" "$APP/Contents/Resources/menubar-$state@2x.png"
+done
+
 echo "› signing ($IDENTITY)"
 codesign --force --options runtime --sign "$IDENTITY" "$APP"
 

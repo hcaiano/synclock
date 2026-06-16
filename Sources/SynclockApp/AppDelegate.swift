@@ -20,9 +20,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem.button {
-            let image = NSImage(systemSymbolName: "metronome", accessibilityDescription: "Synclock")
-            image?.isTemplate = true
-            button.image = image
+            button.image = menubarGlyph(playing: false)
             button.action = #selector(statusButtonClicked)
             button.target = self
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
@@ -34,6 +32,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             vc.openPreferences = { [weak self] in self?.openPreferences() }
             popover.contentViewController = vc
         }
+    }
+
+    /// The B "Pulse Path" template glyph from the app bundle, falling back to an
+    /// SF Symbol when running outside a bundle (e.g. `swift run`).
+    private func menubarGlyph(playing: Bool) -> NSImage? {
+        let name = playing ? "menubar-playing" : "menubar-idle"
+        if let url = Bundle.main.url(forResource: name, withExtension: "png"),
+           let image = NSImage(contentsOf: url) {
+            if let url2 = Bundle.main.url(forResource: "\(name)@2x", withExtension: "png"),
+               let rep2 = NSImageRep(contentsOf: url2) {
+                image.addRepresentation(rep2)
+            }
+            image.size = NSSize(width: 18, height: 18)
+            image.isTemplate = true
+            return image
+        }
+        let symbol = NSImage(systemSymbolName: playing ? "metronome.fill" : "metronome",
+                             accessibilityDescription: "Synclock")
+        symbol?.isTemplate = true
+        return symbol
     }
 
     @objc private func statusButtonClicked() {

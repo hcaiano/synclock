@@ -13,8 +13,14 @@ public enum MIDIByte {
     public static let stop: UInt8 = 0xFC
 }
 
-/// Pulses Per Quarter Note for MIDI clock. Fixed by the MIDI spec.
-public let midiClockPPQN: Int = 24
+/// MIDI clock constants.
+public enum MIDIClock {
+    /// Pulses Per Quarter Note for MIDI clock. Fixed by the MIDI spec.
+    public static let pulsesPerQuarterNote: Int = 24
+}
+
+/// Convenience alias for `MIDIClock.pulsesPerQuarterNote`.
+public let midiClockPPQN: Int = MIDIClock.pulsesPerQuarterNote
 
 /// Pure timing math for the MIDI clock. No threads, no I/O — just the numbers
 /// the hand-owned scheduler schedules against. All durations in nanoseconds.
