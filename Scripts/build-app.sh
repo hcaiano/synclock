@@ -5,6 +5,8 @@
 # Env:
 #   VERSION   marketing version          (default 0.1.0)
 #   IDENTITY  codesign identity          (default ad-hoc "-")
+#   SPARKLE_FEED_URL       appcast URL (default https://synclock.caiano.com/appcast.xml)
+#   SPARKLE_PUBLIC_ED_KEY  Sparkle EdDSA public key; omit for local/dev builds
 #
 # Ad-hoc signing is fine for local runs. For release set IDENTITY to a
 # "Developer ID Application: …" identity, then notarize + staple (Scripts/
@@ -15,14 +17,25 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT="${1:-dist}"
 VERSION="${VERSION:-0.1.0}"
 IDENTITY="${IDENTITY:--}"
+SPARKLE_FEED_URL="${SPARKLE_FEED_URL:-https://synclock.caiano.com/appcast.xml}"
+SPARKLE_PUBLIC_ED_KEY="${SPARKLE_PUBLIC_ED_KEY:-}"
 APP="$ROOT/$OUT/Synclock.app"
+SPARKLE_PLIST_KEYS=""
+
+if [[ -n "$SPARKLE_PUBLIC_ED_KEY" ]]; then
+  SPARKLE_PLIST_KEYS="  <key>SUFeedURL</key><string>$SPARKLE_FEED_URL</string>
+  <key>SUPublicEDKey</key><string>$SPARKLE_PUBLIC_ED_KEY</string>"
+fi
 
 echo "› building release executable…"
 ( cd "$ROOT" && swift build -c release )
 
 echo "› assembling $APP"
-rm -rf "$APP"
+if [[ -e "$APP" ]]; then
+  trash "$APP"
+fi
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
+mkdir -p "$APP/Contents/Frameworks"
 cp "$ROOT/.build/release/synclock" "$APP/Contents/MacOS/synclock"
 
 cat > "$APP/Contents/Info.plist" <<PLIST
@@ -41,14 +54,14 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>LSUIElement</key><true/>
   <key>NSHighResolutionCapable</key><true/>
   <key>NSHumanReadableCopyright</key><string>© 2026 Henrique Caiano. GPLv2-or-later.</string>
-  <!-- Sparkle (wired in once an EdDSA key + appcast host exist):
-  <key>SUFeedURL</key><string>https://synclock.caiano.com/appcast.xml</string>
-  <key>SUPublicEDKey</key><string>REPLACE_WITH_PUBLIC_ED_KEY</string> -->
+$SPARKLE_PLIST_KEYS
 </dict></plist>
 PLIST
 
 echo "› generating Synclock.icns from B Pulse Path icon"
-ICONSET="$(mktemp -d)/Synclock.iconset"
+TMP_ICONSET_ROOT="$(mktemp -d)"
+trap 'trash "$TMP_ICONSET_ROOT"' EXIT
+ICONSET="$TMP_ICONSET_ROOT/Synclock.iconset"
 mkdir -p "$ICONSET"
 EX="$ROOT/branding/app-icon/exports"
 cp "$EX/synclock-icon-16.png"   "$ICONSET/icon_16x16.png"
@@ -69,7 +82,17 @@ for state in idle playing; do
   cp "$ROOT/branding/menubar/synclock-menubar-$state-36.png" "$APP/Contents/Resources/menubar-$state@2x.png"
 done
 
+echo "› bundling Sparkle.framework"
+SPARKLE_FRAMEWORK="$(find "$ROOT/.build" -path '*/release/Sparkle.framework' -type d | head -1)"
+if [[ -z "$SPARKLE_FRAMEWORK" ]]; then
+  echo "missing Sparkle.framework in .build release artifacts" >&2
+  exit 1
+fi
+cp -R "$SPARKLE_FRAMEWORK" "$APP/Contents/Frameworks/"
+install_name_tool -add_rpath "@executable_path/../Frameworks" "$APP/Contents/MacOS/synclock" 2>/dev/null || true
+
 echo "› signing ($IDENTITY)"
+codesign --force --options runtime --sign "$IDENTITY" "$APP/Contents/Frameworks/Sparkle.framework"
 codesign --force --options runtime --sign "$IDENTITY" "$APP"
 
 echo "✓ built $APP (v$VERSION)"

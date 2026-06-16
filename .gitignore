@@ -10,6 +10,7 @@ Package.resolved
 /dist/
 *.app
 *.dmg
+site/.wrangler/
 
 # Editor
 *.xcodeproj

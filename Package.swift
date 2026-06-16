@@ -8,14 +8,17 @@ import PackageDescription
 // github.com/Ableton/link under ThirdParty/ableton-link and exposes a small C
 // ABI for Swift (Sources/AbletonLinkBridge/include).
 //
-// Sparkle (updater) is intentionally NOT a dependency yet — it is wired in
-// Phase 9 (packaging) so the skeleton builds without network fetches.
+// Sparkle is wired for Phase 9 packaging; release builds enable it when the
+// app bundle contains SUFeedURL + SUPublicEDKey.
 
 let package = Package(
     name: "Synclock",
     platforms: [.macOS(.v13)],
     products: [
         .executable(name: "synclock", targets: ["SynclockApp"]),
+    ],
+    dependencies: [
+        .package(url: "https://github.com/sparkle-project/Sparkle", from: "2.9.3"),
     ],
     targets: [
         // C ABI bridge to Ableton Link's C++ source.
@@ -44,7 +47,12 @@ let package = Package(
         // AppKit LSUIElement menubar agent.
         .executableTarget(
             name: "SynclockApp",
-            dependencies: ["SynclockCore", "SynclockMIDI", "AbletonLinkBridge"]
+            dependencies: [
+                "SynclockCore",
+                "SynclockMIDI",
+                "AbletonLinkBridge",
+                .product(name: "Sparkle", package: "Sparkle"),
+            ]
         ),
         // Dependency-free test runner (Lineup pattern): `swift run SynclockTests`.
         .executableTarget(

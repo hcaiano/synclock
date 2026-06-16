@@ -24,9 +24,9 @@ swift run SynclockApp  # launch the menubar agent
 swift run SynclockTests # dependency-free test runner
 ```
 
-The `AbletonLinkBridge` target currently ships a self-contained **stub** so the
-app builds offline; the real Ableton Link source is vendored in Phase 0 (see
-[`ThirdParty/README.md`](ThirdParty/README.md)) behind the same C ABI.
+The `AbletonLinkBridge` target vendors Ableton Link 4.0 under
+`ThirdParty/ableton-link` and exposes it to Swift through a small C ABI (see
+[`ThirdParty/README.md`](ThirdParty/README.md)).
 
 ## License
 **GPLv2-or-later** (see [`LICENSE`](LICENSE)) — required because Synclock links the

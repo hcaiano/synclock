@@ -1,4 +1,5 @@
 import AppKit
+import Sparkle
 import SynclockCore
 import SynclockMIDI
 
@@ -10,6 +11,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let popover = NSPopover()
     private var engine: SyncEngine?
     private var engineError: String?
+    private var updaterController: SPUStandardUpdaterController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         do {
@@ -17,6 +19,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         } catch {
             engineError = "\(error)"
         }
+        configureUpdater()
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem.button {
@@ -32,6 +35,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             vc.openPreferences = { [weak self] in self?.openPreferences() }
             popover.contentViewController = vc
         }
+    }
+
+    private func configureUpdater() {
+        let info = Bundle.main.infoDictionary ?? [:]
+        guard let feed = info["SUFeedURL"] as? String, !feed.isEmpty,
+              let key = info["SUPublicEDKey"] as? String, !key.isEmpty else {
+            return
+        }
+        updaterController = SPUStandardUpdaterController(startingUpdater: true,
+                                                        updaterDelegate: nil,
+                                                        userDriverDelegate: nil)
     }
 
     /// The B "Pulse Path" template glyph from the app bundle, falling back to an
@@ -82,6 +96,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             menu.addItem(.separator())
         } else {
             menu.addItem(withTitle: "Preferences…", action: #selector(openPreferences), keyEquivalent: ",").target = self
+            addUpdaterItem(to: menu)
             menu.addItem(.separator())
         }
         menu.addItem(withTitle: "Quit Synclock", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
@@ -92,5 +107,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func openPreferences() {
         PreferencesWindowController.shared(engine: engine).show()
+    }
+
+    private func addUpdaterItem(to menu: NSMenu) {
+        guard let updaterController else {
+            let item = NSMenuItem(title: "Check for Updates…", action: nil, keyEquivalent: "")
+            item.isEnabled = false
+            menu.addItem(item)
+            return
+        }
+        let item = NSMenuItem(title: "Check for Updates…",
+                              action: #selector(SPUStandardUpdaterController.checkForUpdates(_:)),
+                              keyEquivalent: "")
+        item.target = updaterController
+        menu.addItem(item)
     }
 }
