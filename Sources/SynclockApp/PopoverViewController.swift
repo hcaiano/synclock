@@ -106,9 +106,9 @@ final class PopoverViewController: NSViewController {
         playButton.bezelColor = Theme.accent
         playButton.contentTintColor = .white
 
-        let tapButton = NSButton(title: "Tap", target: self, action: #selector(tapTempo))
-        tapButton.bezelStyle = .rounded
-        tapButton.controlSize = .large
+        let tapButton = surfaceStyled(NSButton(title: "Tap", target: self, action: #selector(tapTempo)),
+                                      radius: 11)
+        tapButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
         tapButton.setAccessibilityLabel("Tap tempo")
 
         let row = NSStackView(views: [playButton, tapButton])
@@ -179,12 +179,25 @@ final class PopoverViewController: NSViewController {
     // MARK: - Helpers
 
     private func nudgeButton(_ title: String, _ action: Selector) -> NSButton {
-        let b = NSButton(title: title, target: self, action: action)
-        b.bezelStyle = .rounded
+        let b = surfaceStyled(NSButton(title: title, target: self, action: action), radius: 7)
         b.font = .systemFont(ofSize: 10)
         b.widthAnchor.constraint(equalToConstant: 30).isActive = true
+        b.heightAnchor.constraint(equalToConstant: 22).isActive = true
         // Arrow glyphs read poorly under VoiceOver; give them real labels.
         b.setAccessibilityLabel(title == "▲" ? "Increase tempo" : "Decrease tempo")
+        return b
+    }
+
+    /// A flat, layer-backed button on the popover's surface color with a hairline
+    /// border (matches the mockup's dark rounded controls, vs. default bezels).
+    private func surfaceStyled(_ b: NSButton, radius: CGFloat) -> NSButton {
+        b.isBordered = false
+        b.wantsLayer = true
+        b.layer?.backgroundColor = Theme.surface.cgColor
+        b.layer?.cornerRadius = radius
+        b.layer?.borderWidth = 1
+        b.layer?.borderColor = Theme.hairline.cgColor
+        b.contentTintColor = Theme.inkSecondary
         return b
     }
 
