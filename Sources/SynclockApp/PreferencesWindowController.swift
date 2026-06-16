@@ -1,4 +1,5 @@
 import AppKit
+import ServiceManagement
 import SynclockCore
 import SynclockMIDI
 
@@ -172,7 +173,11 @@ final class GeneralViewController: NSViewController {
         let note = NSTextField(labelWithString: "Continuous MIDI clock keeps gear locked; transport controls play/stop.")
         note.font = .systemFont(ofSize: 11); note.textColor = .secondaryLabelColor
 
-        let stack = NSStackView(views: [cws, note])
+        let launch = NSButton(checkboxWithTitle: "Launch Synclock at login",
+                              target: self, action: #selector(toggleLaunchAtLogin(_:)))
+        launch.state = (SMAppService.mainApp.status == .enabled) ? .on : .off
+
+        let stack = NSStackView(views: [cws, note, launch])
         stack.orientation = .vertical; stack.alignment = .leading; stack.spacing = 8
         stack.translatesAutoresizingMaskIntoConstraints = false
         let container = NSView(frame: NSRect(x: 0, y: 0, width: 560, height: 420))
@@ -184,6 +189,17 @@ final class GeneralViewController: NSViewController {
         view = container
     }
     @objc private func toggleCWS(_ s: NSButton) { engine?.setClockWhileStopped(s.state == .on) }
+
+    @objc private func toggleLaunchAtLogin(_ s: NSButton) {
+        do {
+            if s.state == .on { try SMAppService.mainApp.register() }
+            else { try SMAppService.mainApp.unregister() }
+        } catch {
+            // Registration only works for an installed, signed .app; ignore in dev.
+            s.state = (SMAppService.mainApp.status == .enabled) ? .on : .off
+            NSSound.beep()
+        }
+    }
 }
 
 // MARK: - Link tab

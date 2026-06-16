@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-test:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive   # ThirdParty/ableton-link (+ asio-standalone)
+
+      - name: Select Xcode 16.2+
+        run: sudo xcode-select -s /Applications/Xcode_16.2.app || sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Toolchain
+        run: swift --version
+
+      - name: Build
+        run: swift build
+
+      - name: Unit tests (dependency-free runner)
+        run: swift run SynclockTests
+
+      - name: Build app bundle
+        run: ./Scripts/build-app.sh dist
