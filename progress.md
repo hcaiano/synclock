@@ -116,6 +116,16 @@
 - Mirrored Lineup's site deployment pattern for Synclock: `site/wrangler.toml` with Cloudflare Workers static assets, plus `_headers`, `robots.txt`, `sitemap.xml`, `.assetsignore`, and `site/README.md`.
 - Updated site metadata to use production canonical/OG/Twitter URLs at `https://synclock.caiano.com/` and root-relative asset URLs.
 - Validated without deploying: `cd site && npx --yes wrangler@latest deploy --dry-run` → Wrangler 4.101.0 read the static assets config and exited cleanly.
+- Claude deployed the Worker to the Caiano Cloudflare account and attached `synclock.caiano.com`; Codex verified HTTP 200 + page content via `curl`. Live proof screenshot: `design/synclock-live-site.png`.
+- Added `site/appcast.xml`, a valid empty Sparkle RSS channel for the future signed release feed; validated with `xmllint --noout` and Wrangler dry-run.
 
 ### Remaining
-- Live deploy/custom domain attach still requires the personal Caiano Cloudflare token/path Claude is handling.
+- Final release still requires Developer ID signing/notarization + Sparkle EdDSA key/appcast.
+
+## Session 9 — Pulse Coral brand refresh exploration (Codex)
+- Henrique rejected the dark/complex B Pulse Path direction and chose Pulse Coral `#FF5C57` as Synclock's distinct accent (instead of Lineup blue).
+- Generated a fresh lighter/friendlier/simpler v2 icon exploration set under `branding/explorations-v2/`: Tempo Dot, Soft Sync Rings, Coral Beat, Rounded Metronome, and Phase Pebble.
+- Each direction includes a 1024 app icon, 16/32/64/128/256/512 previews, idle/playing menubar template glyph PNG+SVG assets, a wordmark lockup, README rationale, and a contact sheet at `branding/explorations-v2/contact-sheet.png`.
+- Henrique chose **A Tempo Dot** as the locked new identity. Regenerated canonical production branding from `branding/explorations-v2/a-tempo-dot`: app icon master/exports, full `Synclock.appiconset`, menubar idle/playing template glyphs, wordmark lockup, and verification sheets.
+- Updated `branding/generate_synclock_icons.py` so the default source is the locked `explorations-v2/a-tempo-dot`; it still accepts an explicit source folder for future explorations.
+- Verified `.appiconset` manifest entries and image dimensions, export dimensions, menubar glyph dimensions, and visually checked `branding/verification/synclock-icon-readability-sheet.png` plus `branding/verification/synclock-menubar-glyph-sheet.png`.

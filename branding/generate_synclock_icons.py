@@ -2,14 +2,16 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
+import sys
 from pathlib import Path
 
 from PIL import Image, ImageDraw
 
 
 ROOT = Path(__file__).resolve().parent
-SOURCE = ROOT / "explorations" / "b-pulse-path"
+DEFAULT_SOURCE = ROOT / "explorations-v2" / "a-tempo-dot"
 APP_DIR = ROOT / "app-icon"
 EXPORTS_DIR = APP_DIR / "exports"
 APPICONSET_DIR = ROOT / "Synclock.appiconset"
@@ -18,18 +20,27 @@ WORDMARK_DIR = ROOT / "wordmark"
 VERIFY_DIR = ROOT / "verification"
 
 
-def ensure_sources() -> None:
+def resolve_source() -> Path:
+    if len(sys.argv) > 2:
+        raise SystemExit("Usage: generate_synclock_icons.py [source-exploration-dir]")
+    source_arg = sys.argv[1] if len(sys.argv) == 2 else os.environ.get("SYNCLOCK_ICON_SOURCE")
+    if source_arg:
+        return Path(source_arg).expanduser().resolve()
+    return DEFAULT_SOURCE
+
+
+def ensure_sources(source: Path) -> None:
     required = [
-        SOURCE / "app-icon-1024.png",
-        SOURCE / "menubar-idle.svg",
-        SOURCE / "menubar-playing.svg",
-        SOURCE / "menubar-idle-36.png",
-        SOURCE / "menubar-playing-36.png",
-        SOURCE / "wordmark-lockup.png",
+        source / "app-icon-1024.png",
+        source / "menubar-idle.svg",
+        source / "menubar-playing.svg",
+        source / "menubar-idle-36.png",
+        source / "menubar-playing-36.png",
+        source / "wordmark-lockup.png",
     ]
     missing = [str(path) for path in required if not path.exists()]
     if missing:
-        raise SystemExit(f"Missing locked B Pulse Path source assets: {missing}")
+        raise SystemExit(f"Missing Synclock icon source assets: {missing}")
 
 
 def save_appiconset(master: Image.Image) -> None:
@@ -62,12 +73,12 @@ def save_appiconset(master: Image.Image) -> None:
     )
 
 
-def save_menubar_assets() -> None:
+def save_menubar_assets(source: Path) -> None:
     for variant in ("idle", "playing"):
-        shutil.copyfile(SOURCE / f"menubar-{variant}.svg", MENUBAR_DIR / f"synclock-menubar-{variant}.svg")
-        source = Image.open(SOURCE / f"menubar-{variant}-36.png").convert("RGBA")
+        shutil.copyfile(source / f"menubar-{variant}.svg", MENUBAR_DIR / f"synclock-menubar-{variant}.svg")
+        source_image = Image.open(source / f"menubar-{variant}-36.png").convert("RGBA")
         for size in (16, 18, 32, 36):
-            source.resize((size, size), Image.Resampling.LANCZOS).save(
+            source_image.resize((size, size), Image.Resampling.LANCZOS).save(
                 MENUBAR_DIR / f"synclock-menubar-{variant}-{size}.png"
             )
 
@@ -105,11 +116,12 @@ def make_verification(master: Image.Image) -> None:
 
 
 def main() -> None:
-    ensure_sources()
+    source = resolve_source()
+    ensure_sources(source)
     for directory in (APP_DIR, EXPORTS_DIR, APPICONSET_DIR, MENUBAR_DIR, WORDMARK_DIR, VERIFY_DIR):
         directory.mkdir(parents=True, exist_ok=True)
 
-    master = Image.open(SOURCE / "app-icon-1024.png").convert("RGBA")
+    master = Image.open(source / "app-icon-1024.png").convert("RGBA")
     master.save(APP_DIR / "synclock-icon-1024.png")
     for size in (16, 32, 64, 128, 256, 512, 1024):
         master.resize((size, size), Image.Resampling.LANCZOS).save(
@@ -117,11 +129,12 @@ def main() -> None:
         )
     save_appiconset(master)
 
-    save_menubar_assets()
-    shutil.copyfile(SOURCE / "wordmark-lockup.png", WORDMARK_DIR / "synclock-wordmark-lockup.png")
+    save_menubar_assets(source)
+    shutil.copyfile(source / "wordmark-lockup.png", WORDMARK_DIR / "synclock-wordmark-lockup.png")
 
     make_verification(master)
 
+    print(f"Source {source}")
     print(f"Wrote {APP_DIR / 'synclock-icon-1024.png'}")
     print(f"Wrote {APPICONSET_DIR}")
     print(f"Wrote {MENUBAR_DIR}")
