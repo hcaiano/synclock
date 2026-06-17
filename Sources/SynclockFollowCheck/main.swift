@@ -40,40 +40,46 @@ do {
     MCLinkSetEnabled(peer, true)
     MCLinkSetStartStopSyncEnabled(peer, true)
 
-    engine.setMode(.followLink)
+    engine.setLinkEnabled(true)
     try require(wait(timeout: 6) { engine.snapshot().peerCount >= 1 },
                 "SyncEngine did not discover the Link peer")
 
     MCLinkSetTempo(peer, 137, MCLinkClockMicros(peer))
     try require(wait(timeout: 3) { abs(engine.snapshot().tempo.bpm - 137) < 0.5 },
-                "Follow mode did not adopt peer tempo")
+                "Link ON did not adopt peer tempo")
 
     MCLinkSetIsPlayingAndRequestBeatAtTime(peer, true, MCLinkClockMicros(peer),
                                            0, LinkFollowGrid.defaultQuantum)
     try require(wait(timeout: 3) { engine.snapshot().transport == .playing },
-                "Follow mode did not adopt Link play state")
+                "Link ON did not adopt Link play state")
 
     MCLinkSetIsPlaying(peer, false, MCLinkClockMicros(peer))
     try require(wait(timeout: 3) { engine.snapshot().transport == .stopped },
-                "Follow mode did not adopt Link stop state")
+                "Link ON did not adopt Link stop state")
 
-    engine.setMode(.leadLink)
     engine.setTempo(Tempo(111))
     try require(wait(timeout: 3) { abs(MCLinkTempo(peer) - 111) < 0.5 },
-                "Lead mode did not publish local tempo")
+                "Link ON did not publish local tempo")
 
     engine.play()
     try require(wait(timeout: 3) { MCLinkIsPlaying(peer) },
-                "Lead mode did not publish play state")
+                "Link ON did not publish play state")
 
     engine.stop()
     try require(wait(timeout: 3) { !MCLinkIsPlaying(peer) },
-                "Lead mode did not publish stop state")
+                "Link ON did not publish stop state")
+
+    let phase = engine.currentBarPhase()
+    let beat = engine.currentBeatInBar()
+    try require(phase >= 0 && phase < 1, "currentBarPhase out of range")
+    try require((0...3).contains(beat), "currentBeatInBar out of range")
 
     print("SynclockFollowCheck OK")
     print("peerCount=\(engine.snapshot().peerCount)")
-    print("followTempo=137")
-    print("leadTempo=111")
+    print("adoptedTempo=137")
+    print("publishedTempo=111")
+    print("barPhase=\(phase)")
+    print("beatInBar=\(beat)")
 } catch {
     fputs("SynclockFollowCheck FAILED: \(error)\n", stderr)
     exit(1)

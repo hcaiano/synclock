@@ -180,3 +180,42 @@
 - Generated Sparkle EdDSA key (none existed in keychain). PUBLIC KEY = nRxOca8UMvC83e7/DELKYh0h6VHBPRqMkZfIDLDIgpw= (public, safe). Private key in login keychain — user must back it up.
 - NOTE/decision: validation build is arm64 THIN; marketing claims "Apple Silicon & Intel". Need universal build OR adjust copy.
 - BLOCKERS (user): Developer ID Application cert in keychain; `notarytool store-credentials synclock-notary`; provide Team ID + paste `security find-identity -p codesigning -v`.
+
+## Session — v0.1.0 RELEASE SHIPPED 🎉
+- Apple Dev account active. Reused Lineup's Developer ID cert (Team HJ9R8572WN). User created synclock-notary profile (existing app-specific pw).
+- App: built arm64 (Apple Silicon only, per user decision), Developer ID signed. FIRST notarization REJECTED — Sparkle nested helpers (Updater.app/Autoupdate/Downloader.xpc/Installer.xpc) unsigned + no timestamp. Fixed build-app.sh to deep-sign inside-out with --timestamp (Codex landed same as sign_code helper). Rebuilt, re-notarized → Accepted, stapled, Gatekeeper "Notarized Developer ID".
+- DMG: built (4.7M, signed), notarized → Accepted, stapled, Gatekeeper-accepted.
+- Appcast: generate_appcast kept hanging on keychain GUI prompt in background (exit 144). Solved by exporting key via generate_keys -x (same tool, no prompt) → generate_appcast --ed-key-file → trashed key file. Signed appcast.xml written (0.1.0, arm64, EdDSA sig). Verified DMG sha matches enclosure.
+- Committed+pushed: 3b5adfc (release prep) + e9bff96 (appcast + preflight). Deployed site (appcast.xml live, 200).
+- GitHub Release v0.1.0 created with notarized DMG. Verified: DMG downloadable at appcast URL (200, 3884541 bytes = signed enclosure). https://github.com/hcaiano/synclock/releases/tag/v0.1.0
+- Herdr collaboration with Codex closed (both accepted). Icon A + build pipeline complete.
+- REMINDER: user must back up Sparkle EdDSA PRIVATE key from login keychain (generate_keys -x → password manager). Public: nRxOca8UMvC83e7/DELKYh0h6VHBPRqMkZfIDLDIgpw=
+
+## Session — Phase 11 v0.1.1 UX rework kickoff (work-with-codex + planning-with-files)
+- Henrique installed v0.1.0, gave live feedback. Wrote Phase 11 plan in task_plan.md (5 items, Claude=UI / Codex=engine).
+- Re-bootstrapped herdr pair (new sid). Assigned Codex: 11.3 Link on/off (collapse LinkMode→linkEnabled, bidirectional when on) + 11.4 expose currentBarPhase()/currentBeatInBar(). API contract sent.
+- Henrique confirmed beat indicator = SEGMENTED BAR (4 cells, downbeat emphasized, sweeps L→R, resets on 1). Link = NSSwitch toggle.
+- Built Sources/SynclockApp/BeatPhaseView.swift — standalone segmented-bar view, phaseProvider closure (API-agnostic), Reduce-Motion = discrete beats, self-animates ~60fps while active.
+- swift build currently RED at SyncEngine.swift:277 (.followLink) — Codex mid-refactor. Holding my popover/BPM/Prefs edits until Codex signals SynclockMIDI green + final API, to keep the first integration build clean.
+
+## Session — Phase 11 engine API landed (Codex)
+- Removed `LinkMode` from public API. `SynclockSettings` now stores `linkEnabled: Bool`; decoder migrates legacy `"linkMode": "followLink"` / `"leadLink"` to true and `"free"` to false.
+- `SyncEngine` API for UI: `setLinkEnabled(_ on: Bool)`, `Snapshot.linkEnabled`, `currentBarPhase() -> Double`, `currentBeatInBar() -> Int`.
+- Link ON is bidirectional: joins Link, derives the tick grid from Link, adopts peer tempo/start-stop, and publishes local tempo/start-stop changes. Link OFF disables Link and runs the local free grid.
+- Bar phase semantics: quantum=4; Link ON samples Link's beat phase; Link OFF samples the local free-running clock. If Link is OFF and the local clock is stopped with clock-while-stopped OFF, phase/beat return downbeat `0`.
+- Added tests for legacy settings migration and local phase continuity; updated SynclockFollowCheck for bidirectional Link ON + phase sampler range.
+- Verified: `swift build`; `swift run SynclockTests` → 85/85; `swift run SynclockFollowCheck` → peerCount=1, adoptedTempo=137, publishedTempo=111, barPhase in range.
+
+## Session — Phase 11 UI pass (popover) built against Codex's engine API
+- Codex landed engine API green (85/85): setLinkEnabled, Snapshot.linkEnabled, currentBarPhase(), currentBeatInBar(); LinkMode removed; bidirectional when on; phase semantics defined.
+- Built UI (SynclockApp): FlatButton.swift (flat layer-backed button w/ press feedback — kills the system green pill), TempoField.swift (editable BPM + scroll-to-nudge), BeatPhaseView.swift (segmented bar, downbeat-emphasized, Reduce-Motion = discrete, ~60fps).
+- Rewrote PopoverViewController: editable BPM (click/type/scroll/▲▼, clamp via Tempo 30–300), flat mint Play button, beat bar wired to engine.currentBarPhase()/currentBeatInBar() (animates while playing or Link-on-with-peers), Ableton Link NSSwitch toggle + peer count, tighter mockup-spec spacing.
+- swift build green. Built dist-dev/Synclock.app (ad-hoc), launched — no crash. Awaiting Henrique's visual check on the real app (vibrancy).
+- OPEN: NSSwitch shows SYSTEM accent when on (not mint) — decide native switch vs custom mint toggle. Preferences redesign (11.5) still TODO.
+
+## Session — popover bugs fixed + objectively verified (work-with-codex)
+- Henrique reported Tap + ▲▼ dead on v0.1.1 popover. Root cause: my FlatButton overrode mouseDown for press feedback, swallowing the click action. Fixed: standard NSButton momentary-push action path + isHighlighted press feedback (no mouseDown override).
+- Codex (computer-use directive): external AX can open NSStatusItem but popover enumeration hangs → built in-app harness SYNCLOCK_POPOVER_SELF_TEST=1 exercising real control paths (FlatButton.performClick, TempoField.sendAction/scrollWheel, MintToggle.mouseDown) + SYNCLOCK_UISHOT render. Stored button refs in PopoverViewController.
+- Verified merged: swift build green; popover self-test 13/13 PASS; SynclockTests 85/85; FollowCheck OK in isolation (the nonzero was the running dev app holding the Link session — not a regression). Accepted Codex.
+- TODO wire SYNCLOCK_POPOVER_SELF_TEST into CI as regression guard.
+- NEXT: Preferences redesign (11.5) → update marketing site to new design (toggle/beat) → cut v0.1.1 (notarized + appcast auto-update). Then commit the whole v0.1.1.

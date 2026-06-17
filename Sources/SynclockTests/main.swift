@@ -65,15 +65,6 @@ group("ClockMath tick timestamps are monotonic") {
     check(t100 > t1, "tick 100 after tick 1")
 }
 
-group("LinkMode semantics") {
-    check(LinkMode.free.joinsSession == false, "Free does not join")
-    check(LinkMode.followLink.joinsSession, "Follow joins")
-    check(LinkMode.leadLink.joinsSession, "Lead joins")
-    check(LinkMode.followLink.allowsLocalTempoEdit == false, "Follow is tempo read-only")
-    check(LinkMode.free.allowsLocalTempoEdit, "Free allows tempo edit")
-    check(LinkMode.allCases.count == 3, "three modes")
-}
-
 group("OutputSettings defaults to OFF (live safety)") {
     let d = OutputSettings(uniqueID: 42, systemName: "IAC Bus 1")
     check(d.enabled == false, "new device defaults disabled")
@@ -297,7 +288,7 @@ group("SettingsStore round-trips and survives corruption") {
 
     var s = SynclockSettings.defaults
     s.bpm = 137.5
-    s.linkMode = .followLink
+    s.linkEnabled = true
     s.clockWhileStopped = false
     s.globalOffsetMs = -3
     s.devices = [OutputSettings(uniqueID: 7, systemName: "TR-8S", nickname: "Drums",
@@ -313,6 +304,59 @@ group("SettingsStore round-trips and survives corruption") {
     let backups = (try? FileManager.default.contentsOfDirectory(atPath: tmp.path)) ?? []
     check(backups.contains { $0.hasPrefix("settings.corrupt-") }, "corrupt file backed up")
 
+    try? FileManager.default.removeItem(at: tmp)
+}
+
+group("SettingsStore migrates legacy LinkMode to linkEnabled") {
+    func loadLegacy(_ mode: String) -> SynclockSettings {
+        let tmp = FileManager.default.temporaryDirectory
+            .appendingPathComponent("synclock-legacy-\(UUID().uuidString)")
+        let store = SettingsStore(directory: tmp)
+        try? FileManager.default.createDirectory(at: tmp, withIntermediateDirectories: true)
+        let json = """
+        {
+          "schema": 1,
+          "bpm": 121,
+          "linkMode": "\(mode)",
+          "clockWhileStopped": true,
+          "globalOffsetMs": 0,
+          "virtualPortName": "Synclock",
+          "devices": []
+        }
+        """
+        try? Data(json.utf8).write(to: store.fileURL)
+        let settings = store.load()
+        try? FileManager.default.removeItem(at: tmp)
+        return settings
+    }
+
+    check(loadLegacy("free").linkEnabled == false, "legacy free -> Link off")
+    check(loadLegacy("followLink").linkEnabled == true, "legacy follow -> Link on")
+    check(loadLegacy("leadLink").linkEnabled == true, "legacy lead -> Link on")
+}
+
+group("SyncEngine bar phase samples local running state") {
+    let tmp = FileManager.default.temporaryDirectory
+        .appendingPathComponent("synclock-phase-\(UUID().uuidString)")
+    let store = SettingsStore(directory: tmp)
+    var settings = SynclockSettings.defaults
+    settings.clockWhileStopped = false
+    try? store.save(settings)
+    if let engine = try? SyncEngine(store: store) {
+        check(engine.currentBarPhase() == 0, "stopped local clock reports downbeat")
+        check(engine.currentBeatInBar() == 0, "stopped local clock reports beat 0")
+        engine.play()
+        Thread.sleep(forTimeInterval: 0.08)
+        let before = engine.currentBarPhase()
+        check(before > 0 && before < 1, "playing local clock phase advances")
+        engine.setTempo(Tempo(180))
+        let after = engine.currentBarPhase()
+        check(abs(after - before) < 0.08, "local phase stays continuous across tempo change")
+        engine.stop()
+        check(engine.currentBarPhase() == 0, "stopped local clock returns to downbeat")
+    } else {
+        print("  (skipped: SyncEngine unavailable in this environment)")
+    }
     try? FileManager.default.removeItem(at: tmp)
 }
 

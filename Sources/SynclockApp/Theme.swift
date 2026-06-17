@@ -9,6 +9,7 @@ enum Theme {
     static let inkSecondary = NSColor(white: 1, alpha: 0.72)
     static let inkMuted = NSColor(white: 1, alpha: 0.45)
     static let surface = NSColor(white: 1, alpha: 0.08)
+    static let switchTrackOff = NSColor(white: 1, alpha: 0.20) // off-state pill for MintToggle
     static let hairline = NSColor(white: 1, alpha: 0.10)
     static let amber = NSColor(srgbRed: 0xE2/255, green: 0xA2/255, blue: 0x3B/255, alpha: 1)
 
