@@ -17,10 +17,10 @@
 <link rel="apple-touch-icon" href="/assets/icon-256.png">
 <style>
   :root{
-    --bg:#0F1014; --bg-2:#14161c; --surface:#1d2027; --surface-2:#23262e;
-    --hairline:rgba(255,255,255,0.08); --hairline-2:rgba(255,255,255,0.12);
-    --ink:#F3F5F1; --ink-2:#b6bbc4; --ink-muted:#7c818b;
-    --accent:#16C79A; --accent-ink:#0E1411; --amber:#E2A23B;
+    --bg:#0A1422; --bg-2:#0E1A2D; --surface:#15223A; --surface-2:#1C2B46;
+    --hairline:rgba(120,180,225,0.10); --hairline-2:rgba(120,180,225,0.17);
+    --ink:#EAF2F7; --ink-2:#9FB2C6; --ink-muted:#6F8298;
+    --accent:#4FE3EC; --accent-ink:#04223E; --amber:#E2A23B;
     --font:-apple-system,"SF Pro Text","SF Pro Display",system-ui,"Segoe UI",sans-serif;
     --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,monospace;
     --maxw:1000px;
@@ -36,7 +36,7 @@
 
   /* nav */
   nav{position:sticky;top:0;z-index:10;backdrop-filter:blur(16px);
-    background:rgba(15,16,20,0.72);border-bottom:1px solid var(--hairline)}
+    background:rgba(10,20,34,0.72);border-bottom:1px solid var(--hairline)}
   nav .wrap{display:flex;align-items:center;justify-content:space-between;height:58px}
   .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15.5px}
   .brand img{width:24px;height:24px;border-radius:6px}
@@ -45,7 +45,7 @@
   .btn{display:inline-flex;align-items:center;gap:8px;border-radius:9px;padding:9px 16px;
     font-size:14px;font-weight:600;transition:background .18s var(--e-out),color .18s var(--e-out),border-color .18s var(--e-out)}
   .btn-primary{background:var(--accent);color:var(--accent-ink)}
-  .btn-primary:hover{background:#1ddcab}
+  .btn-primary:hover{background:#6FEFF6}
   .btn-ghost{border:1px solid var(--hairline-2);color:var(--ink-2)}
   .btn-ghost:hover{color:var(--ink);background:var(--surface)}
   @media(max-width:720px){.nav-links a:not(.btn){display:none}}
@@ -63,7 +63,7 @@
   .stage{margin:60px auto 0;display:flex;justify-content:center;padding:0 24px;position:relative}
   .stage::before{content:"";position:absolute;top:6%;left:50%;transform:translateX(-50%);
     width:min(560px,90%);height:74%;pointer-events:none;z-index:0;
-    background:radial-gradient(60% 60% at 50% 35%,rgba(22,199,154,0.16),transparent 70%)}
+    background:radial-gradient(60% 60% at 50% 35%,rgba(79,227,236,0.16),transparent 70%)}
   .pop{position:relative;z-index:1;width:340px;border-radius:17px;
     background:rgba(26,28,34,0.92);backdrop-filter:blur(44px) saturate(160%);
     border:1px solid var(--hairline-2);
@@ -92,11 +92,18 @@
   .blabel{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
   .blabel .t{font-size:11px;font-weight:600;color:var(--ink-muted);letter-spacing:.02em}
   .peers{font-size:11px;color:var(--ink-2);display:flex;align-items:center;gap:6px}
-  .peers .live{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px rgba(22,199,154,0.18)}
-  .seg{display:flex;background:var(--surface);border-radius:9px;padding:3px;gap:3px;border:1px solid var(--hairline)}
-  .seg span{flex:1;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;
-    font-size:12px;font-weight:500;color:var(--ink-2)}
-  .seg span.on{background:var(--accent);color:var(--accent-ink);font-weight:600}
+  .peers .live{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px rgba(79,227,236,0.18)}
+  .beat{display:flex;gap:4px;margin-top:11px}
+  .beat i{flex:1;height:6px;border-radius:2px;background:var(--surface)}
+  .beat i.on{background:var(--accent)}
+  .beat i.now{background:var(--accent);opacity:.5}
+  .lrow{display:flex;align-items:center;gap:10px}
+  .lrow .lt{font-size:13px;color:var(--ink);font-weight:500;flex:1}
+  .tg{width:38px;height:22px;border-radius:11px;background:var(--surface);position:relative;flex:none}
+  .tg::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3)}
+  .tg.on{background:var(--accent)}
+  .tg.on::after{left:18px}
   .hint{margin-top:8px;font-size:11px;color:var(--ink-muted);line-height:1.35}
   .hint b{color:var(--ink-2);font-weight:600}
   .health{display:flex;align-items:center;justify-content:space-between;border-radius:9px;
@@ -183,6 +190,7 @@
             <div class="bpm"><b>122.5</b><i>BPM</i></div>
             <div class="nudge"><span>▲</span><span>▼</span></div>
           </div>
+          <div class="beat"><i class="on"></i><i class="on"></i><i class="now"></i><i></i></div>
           <div class="transport">
             <button class="play"><svg width="12" height="13" viewBox="0 0 12 13" fill="currentColor"><rect x="1" y="1" width="3.6" height="11" rx="1"/><rect x="7.4" y="1" width="3.6" height="11" rx="1"/></svg> Stop</button>
             <button class="ghost"><svg width="12" height="12" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.5 1.5v5M3 3.2A5 5 0 1 0 10 3.2"/></svg> Tap</button>
@@ -190,9 +198,8 @@
         </div>
         <div class="psep"></div>
         <div class="pp">
-          <div class="blabel"><span class="t">ABLETON LINK</span><span class="peers"><span class="live"></span>3 peers</span></div>
-          <div class="seg"><span>Free</span><span class="on">Follow</span><span>Lead</span></div>
-          <div class="hint"><b>Following Link.</b> Tempo and phase track the session.</div>
+          <div class="lrow"><span class="lt">Ableton Link</span><span class="peers"><span class="live"></span>3 peers</span><span class="tg on"></span></div>
+          <div class="hint"><b>On.</b> Tempo and start/stop stay in sync with every Link app and device on the network.</div>
         </div>
         <div class="psep"></div>
         <div class="pp">

@@ -219,3 +219,11 @@
 - Verified merged: swift build green; popover self-test 13/13 PASS; SynclockTests 85/85; FollowCheck OK in isolation (the nonzero was the running dev app holding the Link session — not a regression). Accepted Codex.
 - TODO wire SYNCLOCK_POPOVER_SELF_TEST into CI as regression guard.
 - NEXT: Preferences redesign (11.5) → update marketing site to new design (toggle/beat) → cut v0.1.1 (notarized + appcast auto-update). Then commit the whole v0.1.1.
+
+## Session — REBRAND to navy + cyan (new icon)
+- Henrique approved Codex's new icon: deep navy tile + glowing cyan slider mark (3 bars + knob). Moving whole brand off Fresh Mint green.
+- Sampled icon: bg navy #063369→#00132B, accent cyan ~#5BEFF5. New palette: accent #4FE3EC (Slider Cyan), inkOnAccent navy #04223E, site navy surfaces (#0A1422/#0E1A2D/#15223A), cool-tinted hairlines.
+- App: Theme.swift accent→cyan, inkOnAccent→navy. Build green; all components propagate (Play/toggle/beat bar/dots/pulse). No hardcoded mint left in app.
+- Site: index.html :root → navy+cyan; swapped rgba(22,199,154)→rgba(79,227,236) glows, #16C79A→#4FE3EC, #0E1411→#04223E across index/hero-popover/og/DESIGN; fixed nav bg + btn hover. DESIGN.md Mint→Slider Cyan + oklch.
+- Codex briefed (herdr): productionize new icon master into app-icon set + appiconset + MONOCHROME menubar template glyph (slider mark) + wordmark + site icon-256/512. Awaiting ready.
+- TODO: re-render popover.png + og.png in new palette, swap icon assets when Codex delivers, redeploy site, bump v0.1.1, notarized release + appcast. Then ship.

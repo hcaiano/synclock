@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw
 
 
 ROOT = Path(__file__).resolve().parent
-DEFAULT_SOURCE = ROOT / "explorations-v3" / "a-mint-pulse-tile"
+DEFAULT_SOURCE = ROOT / "explorations-v4" / "a-navy-cyan-slider"
 APP_DIR = ROOT / "app-icon"
 EXPORTS_DIR = APP_DIR / "exports"
 APPICONSET_DIR = ROOT / "Synclock.appiconset"
