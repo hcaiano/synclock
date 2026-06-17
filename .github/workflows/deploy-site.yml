@@ -1,0 +1,29 @@
+name: Deploy site
+
+# Auto-deploy the marketing site (site/) to the Cloudflare Worker on every push
+# to main that touches it. Secrets CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID
+# are set on the repo (Caiano account). Mirrors the Lineup setup.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - '.github/workflows/deploy-site.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: site
+          command: deploy
