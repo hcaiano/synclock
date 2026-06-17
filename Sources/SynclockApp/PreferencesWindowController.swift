@@ -351,6 +351,7 @@ final class AboutViewController: NSViewController {
         let links = NSStackView(views: [
             linkButton("Website", "https://synclock.caiano.com"),
             linkButton("Source on GitHub", "https://github.com/hcaiano/synclock"),
+            linkButton("Acknowledgements", "https://github.com/hcaiano/synclock/blob/main/THIRD-PARTY-NOTICES.md"),
         ])
         links.spacing = 16
 

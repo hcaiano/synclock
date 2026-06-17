@@ -26,5 +26,8 @@ jobs:
       - name: Unit tests (dependency-free runner)
         run: swift run SynclockTests
 
+      - name: Popover controls self-test
+        run: SYNCLOCK_POPOVER_SELF_TEST=1 swift run synclock
+
       - name: Build app bundle
         run: ./Scripts/build-app.sh dist
