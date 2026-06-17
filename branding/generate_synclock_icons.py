@@ -18,6 +18,7 @@ APPICONSET_DIR = ROOT / "Synclock.appiconset"
 MENUBAR_DIR = ROOT / "menubar"
 WORDMARK_DIR = ROOT / "wordmark"
 VERIFY_DIR = ROOT / "verification"
+SITE_ASSETS_DIR = ROOT.parent / "site" / "assets"
 
 
 def resolve_source() -> Path:
@@ -32,10 +33,6 @@ def resolve_source() -> Path:
 def ensure_sources(source: Path) -> None:
     required = [
         source / "app-icon-1024.png",
-        source / "menubar-idle.svg",
-        source / "menubar-playing.svg",
-        source / "menubar-idle-36.png",
-        source / "menubar-playing-36.png",
         source / "wordmark-lockup.png",
     ]
     missing = [str(path) for path in required if not path.exists()]
@@ -74,6 +71,16 @@ def save_appiconset(master: Image.Image) -> None:
 
 
 def save_menubar_assets(source: Path) -> None:
+    required = [
+        source / "menubar-idle.svg",
+        source / "menubar-playing.svg",
+        source / "menubar-idle-36.png",
+        source / "menubar-playing-36.png",
+    ]
+    missing = [path for path in required if not path.exists()]
+    if missing:
+        print(f"Skipped menubar assets; missing {missing}")
+        return
     for variant in ("idle", "playing"):
         shutil.copyfile(source / f"menubar-{variant}.svg", MENUBAR_DIR / f"synclock-menubar-{variant}.svg")
         source_image = Image.open(source / f"menubar-{variant}-36.png").convert("RGBA")
@@ -81,6 +88,16 @@ def save_menubar_assets(source: Path) -> None:
             source_image.resize((size, size), Image.Resampling.LANCZOS).save(
                 MENUBAR_DIR / f"synclock-menubar-{variant}-{size}.png"
             )
+
+
+def save_site_assets(master: Image.Image, source: Path) -> None:
+    SITE_ASSETS_DIR.mkdir(parents=True, exist_ok=True)
+    master.resize((256, 256), Image.Resampling.LANCZOS).save(SITE_ASSETS_DIR / "icon-256.png")
+    master.resize((512, 512), Image.Resampling.LANCZOS).save(SITE_ASSETS_DIR / "icon-512.png")
+    master.resize((180, 180), Image.Resampling.LANCZOS).save(SITE_ASSETS_DIR / "apple-touch-icon-180.png")
+    favicon_sizes = [16, 32, 48, 64, 128, 256]
+    master.save(SITE_ASSETS_DIR / "favicon.ico", sizes=[(size, size) for size in favicon_sizes])
+    shutil.copyfile(source / "wordmark-lockup.png", SITE_ASSETS_DIR / "wordmark.png")
 
 
 def make_verification(master: Image.Image) -> None:
@@ -118,7 +135,7 @@ def make_verification(master: Image.Image) -> None:
 def main() -> None:
     source = resolve_source()
     ensure_sources(source)
-    for directory in (APP_DIR, EXPORTS_DIR, APPICONSET_DIR, MENUBAR_DIR, WORDMARK_DIR, VERIFY_DIR):
+    for directory in (APP_DIR, EXPORTS_DIR, APPICONSET_DIR, MENUBAR_DIR, WORDMARK_DIR, VERIFY_DIR, SITE_ASSETS_DIR):
         directory.mkdir(parents=True, exist_ok=True)
 
     master = Image.open(source / "app-icon-1024.png").convert("RGBA")
@@ -129,16 +146,20 @@ def main() -> None:
         )
     save_appiconset(master)
 
-    save_menubar_assets(source)
+    skipped_menubar = os.environ.get("SYNCLOCK_SKIP_MENUBAR") == "1"
+    if not skipped_menubar:
+        save_menubar_assets(source)
     shutil.copyfile(source / "wordmark-lockup.png", WORDMARK_DIR / "synclock-wordmark-lockup.png")
+    save_site_assets(master, source)
 
     make_verification(master)
 
     print(f"Source {source}")
     print(f"Wrote {APP_DIR / 'synclock-icon-1024.png'}")
     print(f"Wrote {APPICONSET_DIR}")
-    print(f"Wrote {MENUBAR_DIR}")
+    print(f"{'Skipped' if skipped_menubar else 'Wrote'} {MENUBAR_DIR}")
     print(f"Wrote {WORDMARK_DIR / 'synclock-wordmark-lockup.png'}")
+    print(f"Wrote {SITE_ASSETS_DIR / 'favicon.ico'}")
     print(f"Wrote {VERIFY_DIR / 'synclock-icon-readability-sheet.png'}")
 
 
