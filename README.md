@@ -6,13 +6,12 @@ and software to one tight clock without opening a DAW. Free, native, open source
 **[synclock.caiano.com](https://synclock.caiano.com)**
 
 ## Download
-**[⬇ Download Synclock for macOS](https://github.com/hcaiano/synclock/releases/latest)** —
-signed and **notarized by Apple**, so it opens cleanly (no right-click-to-open).
+**[Download Synclock for macOS](https://github.com/hcaiano/synclock/releases/latest)**
 
-Open the `.dmg`, drag **Synclock** to Applications, and launch it — it lives in
-the menu bar. Auto-updates are built in (via Sparkle).
+Open the `.dmg`, drag Synclock to Applications, and launch it. It lives in the
+menu bar and updates itself.
 
-> Requires **macOS 13** (Ventura) or later · **Apple Silicon**.
+> macOS 13 or later · Apple Silicon.
 
 ## What it does (v1)
 - Master **MIDI clock** (`0xF8` @ 24 PPQN) + transport (Start / Stop / Continue) to
