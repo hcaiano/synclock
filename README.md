@@ -5,6 +5,10 @@ and software to one tight clock without opening a DAW. Free, native, open source
 
 **[synclock.caiano.com](https://synclock.caiano.com)**
 
+<p align="center">
+  <img src="docs/synclock-widget.png" alt="Synclock menu-bar widget" width="300">
+</p>
+
 ## Download
 **[Download Synclock for macOS](https://github.com/hcaiano/synclock/releases/latest)**
 
