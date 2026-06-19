@@ -49,6 +49,10 @@
   .btn-primary:hover{background:#6FEFF6}
   .btn-ghost{border:1px solid var(--hairline-2);color:var(--ink-2)}
   .btn-ghost:hover{color:var(--ink);background:var(--surface)}
+  .btn-coffee{border:1px solid rgba(226,162,59,.45);color:var(--amber)}
+  .btn-coffee:hover{background:rgba(226,162,59,.12);color:#F0B968}
+  .btn .ct{font-variant-numeric:tabular-nums;opacity:.7}
+  .support{margin-top:22px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
   @media(max-width:720px){.nav-links a:not(.btn){display:none}}
 
   /* hero — product-led, centered */
@@ -240,7 +244,11 @@
     <a class="btn btn-primary" href="https://github.com/hcaiano/synclock/releases">Download for macOS</a>
     <a class="btn btn-ghost" href="https://github.com/hcaiano/synclock">Build from source</a>
   </div>
-  <p class="pill">If it earns a spot in your setup, you can <a class="accent" href="https://buymeacoffee.com/caiano">buy me a coffee</a>.</p>
+  <div class="support">
+    <a class="btn btn-ghost" id="starBtn" href="https://github.com/hcaiano/synclock">★ Star on GitHub</a>
+    <a class="btn btn-coffee" href="https://buymeacoffee.com/caiano">☕ Buy me a coffee</a>
+  </div>
+  <p class="pill">Free and open source. A star or a coffee keeps it going.</p>
 </div></section>
 
 <footer><div class="wrap">
@@ -248,5 +256,15 @@
   <span>GPLv2-or-later · <a href="https://github.com/hcaiano/synclock">Source</a> · © 2026 Henrique Caiano</span>
 </div></footer>
 
+<script>
+  // Live GitHub star count; fails silently to the plain "Star on GitHub" label.
+  fetch('https://api.github.com/repos/hcaiano/synclock')
+    .then(function(r){return r.ok?r.json():null})
+    .then(function(d){
+      if(d&&typeof d.stargazers_count==='number'){
+        document.getElementById('starBtn').innerHTML='★ Star <span class="ct">'+d.stargazers_count+'</span>';
+      }
+    }).catch(function(){});
+</script>
 </body>
 </html>
