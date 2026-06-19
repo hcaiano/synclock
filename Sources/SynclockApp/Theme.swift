@@ -9,9 +9,10 @@ enum Theme {
     static let inkOnAccent = NSColor(srgbRed: 0x04/255, green: 0x22/255, blue: 0x3E/255, alpha: 1) // deep navy ink on bright cyan
     static let amber = NSColor(srgbRed: 0xE2/255, green: 0xA2/255, blue: 0x3B/255, alpha: 1)
 
-    // Neutrals → macOS system semantic colors so the widget renders like a
-    // native menu (vibrant labels/separators that adapt to the material).
-    static let ink = NSColor.labelColor
+    // Primary text stays a SOLID near-white: a vibrant label color washes the
+    // big BPM number out against a translucent material over a light desktop.
+    static let ink = NSColor(srgbRed: 0xF2/255, green: 0xF4/255, blue: 0xF0/255, alpha: 1)
+    // Secondary neutrals → system semantic colors for the native menu feel.
     static let inkSecondary = NSColor.secondaryLabelColor
     static let inkMuted = NSColor.tertiaryLabelColor
     static let surface = NSColor.quaternaryLabelColor          // subtle control fill
