@@ -50,10 +50,15 @@ final class PopoverViewController: NSViewController, NSTextFieldDelegate {
 
     override func loadView() {
         let effect = NSVisualEffectView()
-        effect.material = .popover
+        effect.material = .menu
         effect.blendingMode = .behindWindow
         effect.state = .active
         effect.appearance = NSAppearance(named: .vibrantDark)
+        effect.wantsLayer = true
+        effect.layer?.cornerRadius = 10
+        effect.layer?.masksToBounds = true
+        effect.layer?.borderWidth = 1
+        effect.layer?.borderColor = Theme.hairline.cgColor
         effect.translatesAutoresizingMaskIntoConstraints = false
         effect.widthAnchor.constraint(equalToConstant: Theme.popoverWidth).isActive = true
 
