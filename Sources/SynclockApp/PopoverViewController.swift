@@ -9,6 +9,7 @@ import SynclockMIDI
 final class PopoverViewController: NSViewController, NSTextFieldDelegate {
     private let engine: SyncEngine
     var openPreferences: (() -> Void)?
+    var checkForUpdates: (() -> Void)?
 
     private let bpmField = TempoField(labelWithString: "120")
     private let beatBar = BeatPhaseView(frame: .zero)
@@ -93,6 +94,14 @@ final class PopoverViewController: NSViewController, NSTextFieldDelegate {
         refreshTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in
             self?.refresh()
         }
+    }
+    override func viewDidAppear() {
+        super.viewDidAppear()
+        // Don't let the editable BPM field grab focus on open. If it's first
+        // responder (blinking cursor), the first click on a control just
+        // dismisses the field editor and the action never fires — so Tap and
+        // the nudge arrows appear dead. The field still edits on direct click.
+        view.window?.makeFirstResponder(nil)
     }
     override func viewDidDisappear() {
         super.viewDidDisappear()
@@ -218,16 +227,30 @@ final class PopoverViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func footerRow() -> NSView {
-        let prefs = NSButton(title: "Preferences…", target: self, action: #selector(openPrefs))
-        prefs.isBordered = false
-        prefs.contentTintColor = Theme.inkMuted
-        let quit = NSButton(title: "Quit", target: NSApp, action: #selector(NSApplication.terminate(_:)))
-        quit.isBordered = false
-        quit.contentTintColor = Theme.inkMuted
+        let prefs = footerButton("Preferences…", target: self, action: #selector(openPrefs))
+        let updates = footerButton("Check for Updates…", target: self, action: #selector(checkUpdates))
+        let quit = footerButton("Quit", target: NSApp, action: #selector(NSApplication.terminate(_:)))
         let row = NSStackView(views: [prefs, NSView(), quit])
         row.alignment = .centerY
         row.widthAnchor.constraint(equalToConstant: contentWidth).isActive = true
-        return row
+
+        let updatesRow = NSStackView(views: [updates, NSView()])
+        updatesRow.alignment = .centerY
+        updatesRow.widthAnchor.constraint(equalToConstant: contentWidth).isActive = true
+
+        let stack = NSStackView(views: [row, updatesRow])
+        stack.orientation = .vertical
+        stack.alignment = .leading
+        stack.spacing = 6
+        return stack
+    }
+
+    private func footerButton(_ title: String, target: AnyObject?, action: Selector) -> NSButton {
+        let b = NSButton(title: title, target: target, action: action)
+        b.isBordered = false
+        b.font = .systemFont(ofSize: 12)
+        b.contentTintColor = Theme.inkSecondary
+        return b
     }
 
     // MARK: - Helpers
@@ -300,6 +323,7 @@ final class PopoverViewController: NSViewController, NSTextFieldDelegate {
     }
     @objc private func linkToggled() { engine.setLinkEnabled(linkToggle.isOn); refresh() }
     @objc private func openPrefs() { openPreferences?() }
+    @objc private func checkUpdates() { checkForUpdates?() }
 }
 
 enum PopoverControlSelfTestError: Error, CustomStringConvertible {

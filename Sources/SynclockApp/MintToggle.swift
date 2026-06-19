@@ -73,6 +73,7 @@ final class MintToggle: NSControl {
         sendAction(action, to: target)
     }
 
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
     override func mouseDown(with event: NSEvent) { toggle() }
     override func keyDown(with event: NSEvent) {
         if event.charactersIgnoringModifiers == " " { toggle() } else { super.keyDown(with: event) }

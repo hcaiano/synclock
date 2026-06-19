@@ -31,8 +31,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         if let engine {
             popover.behavior = .transient
+            // Match the arrow/notch chrome to the vibrant-dark content so the
+            // popover reads as one surface (otherwise the arrow looks off-color).
+            popover.appearance = NSAppearance(named: .vibrantDark)
             let vc = PopoverViewController(engine: engine)
             vc.openPreferences = { [weak self] in self?.openPreferences() }
+            vc.checkForUpdates = { [weak self] in
+                self?.updaterController?.checkForUpdates(nil)
+            }
             popover.contentViewController = vc
         }
     }

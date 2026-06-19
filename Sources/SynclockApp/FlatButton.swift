@@ -33,6 +33,11 @@ final class FlatButton: NSButton {
     override var title: String { didSet { applyTitle() } }
     override var wantsUpdateLayer: Bool { true }
 
+    // The popover lives in a menu-bar window that isn't key until first click.
+    // Without this, the first click on a control only activates the window and
+    // the action never fires — which reads as "the button does nothing".
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
     private func applyTitle() {
         let p = NSMutableParagraphStyle(); p.alignment = .center
         attributedTitle = NSAttributedString(string: title, attributes: [
