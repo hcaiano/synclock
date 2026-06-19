@@ -187,8 +187,8 @@ final class DevicesViewController: NSViewController, NSTableViewDataSource, NSTa
         header.translatesAutoresizingMaskIntoConstraints = false
 
         let cols: [(String, String, CGFloat)] = [
-            ("device", "Device", 224), ("status", "Status", 84),
-            ("enabled", "Clock", 54), ("delay", "Sync delay", 112), ("transport", "Transport", 86),
+            ("device", "Device", 210), ("status", "Status", 80),
+            ("enabled", "Clock", 56), ("delay", "Sync delay", 116), ("transport", "Transport", 90),
         ]
         for (id, name, w) in cols {
             let col = NSTableColumn(identifier: .init(id))
@@ -236,6 +236,9 @@ final class DevicesViewController: NSViewController, NSTableViewDataSource, NSTa
             scroll.topAnchor.constraint(equalTo: header.bottomAnchor, constant: 12),
             scroll.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 20),
             scroll.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -20),
+            // Fixed table width so NSTabViewController can't shrink the window
+            // and clip the right-hand columns (Sync delay stepper / Transport).
+            scroll.widthAnchor.constraint(equalToConstant: 600),
             empty.centerXAnchor.constraint(equalTo: scroll.centerXAnchor),
             empty.centerYAnchor.constraint(equalTo: scroll.centerYAnchor),
             buttons.topAnchor.constraint(equalTo: scroll.bottomAnchor, constant: 12),

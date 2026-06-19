@@ -57,8 +57,8 @@ final class PopoverViewController: NSViewController, NSTextFieldDelegate {
         effect.wantsLayer = true
         effect.layer?.cornerRadius = 10
         effect.layer?.masksToBounds = true
-        effect.layer?.borderWidth = 1
-        effect.layer?.borderColor = Theme.hairline.cgColor
+        effect.layer?.borderWidth = 0.5
+        effect.layer?.borderColor = NSColor.separatorColor.cgColor
         effect.translatesAutoresizingMaskIntoConstraints = false
         effect.widthAnchor.constraint(equalToConstant: Theme.popoverWidth).isActive = true
 
@@ -232,34 +232,17 @@ final class PopoverViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func footerRow() -> NSView {
-        let prefs = footerButton("Preferences…", target: self, action: #selector(openPrefs))
-        let updates = footerButton("Check for Updates…", target: self, action: #selector(checkUpdates))
-        let quit = footerButton("Quit", target: NSApp, action: #selector(NSApplication.terminate(_:)))
-        let row = NSStackView(views: [prefs, NSView(), quit])
-        row.alignment = .centerY
-        row.widthAnchor.constraint(equalToConstant: contentWidth).isActive = true
-
-        let updatesRow = NSStackView(views: [updates, NSView()])
-        updatesRow.alignment = .centerY
-        updatesRow.widthAnchor.constraint(equalToConstant: contentWidth).isActive = true
-
-        let stack = NSStackView(views: [row, updatesRow])
+        let rows = [
+            MenuRowButton("Preferences…", target: self, action: #selector(openPrefs)),
+            MenuRowButton("Check for Updates…", target: self, action: #selector(checkUpdates)),
+            MenuRowButton("Quit Synclock", target: NSApp, action: #selector(NSApplication.terminate(_:))),
+        ]
+        rows.forEach { $0.widthAnchor.constraint(equalToConstant: contentWidth).isActive = true }
+        let stack = NSStackView(views: rows)
         stack.orientation = .vertical
         stack.alignment = .leading
-        stack.spacing = 6
+        stack.spacing = 1
         return stack
-    }
-
-    private func footerButton(_ title: String, target: AnyObject?, action: Selector) -> NSButton {
-        let b = NSButton(title: title, target: target, action: action)
-        b.isBordered = false
-        // contentTintColor doesn't reliably color a borderless button's title,
-        // which left these looking disabled-gray. Set the title color explicitly.
-        b.attributedTitle = NSAttributedString(string: title, attributes: [
-            .foregroundColor: Theme.ink,
-            .font: NSFont.systemFont(ofSize: 12),
-        ])
-        return b
     }
 
     // MARK: - Helpers
@@ -311,8 +294,8 @@ final class PopoverViewController: NSViewController, NSTextFieldDelegate {
     // MARK: - Actions
 
     @objc private func toggleTransport() { endFieldEditing(); engine.toggle(); refresh() }
-    @objc private func nudgeUp() { endFieldEditing(); engine.setTempo(engine.snapshot().tempo.nudged(by: 0.1)); refresh() }
-    @objc private func nudgeDown() { endFieldEditing(); engine.setTempo(engine.snapshot().tempo.nudged(by: -0.1)); refresh() }
+    @objc private func nudgeUp() { endFieldEditing(); engine.setTempo(engine.snapshot().tempo.nudged(by: 1)); refresh() }
+    @objc private func nudgeDown() { endFieldEditing(); engine.setTempo(engine.snapshot().tempo.nudged(by: -1)); refresh() }
 
     /// Clicking a borderless control doesn't end the BPM field's edit session,
     /// so the refresh() "don't overwrite while editing" guard would hide the
@@ -354,6 +337,55 @@ final class PopoverViewController: NSViewController, NSTextFieldDelegate {
     @objc private func checkUpdates() { checkForUpdates?() }
 }
 
+/// A full-width footer row styled like a native menu item: left-aligned label
+/// that highlights on hover so it reads as clickable.
+final class MenuRowButton: NSButton {
+    private var hovering = false
+
+    init(_ title: String, target: AnyObject?, action: Selector?) {
+        super.init(frame: .zero)
+        self.target = target; self.action = action
+        isBordered = false
+        wantsLayer = true
+        let p = NSMutableParagraphStyle(); p.alignment = .left; p.firstLineHeadIndent = 8
+        attributedTitle = NSAttributedString(string: title, attributes: [
+            .foregroundColor: NSColor.labelColor,
+            .font: NSFont.systemFont(ofSize: 13),
+            .paragraphStyle: p,
+        ])
+        heightAnchor.constraint(equalToConstant: 24).isActive = true
+    }
+    required init?(coder: NSCoder) { fatalError() }
+
+    override var wantsUpdateLayer: Bool { true }
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        trackingAreas.forEach(removeTrackingArea)
+        addTrackingArea(NSTrackingArea(rect: .zero,
+            options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self))
+    }
+    override func updateLayer() {
+        layer?.cornerRadius = 5
+        // The system menu-selection fill, shown only on hover.
+        layer?.backgroundColor = hovering
+            ? NSColor.selectedContentBackgroundColor.cgColor
+            : NSColor.clear.cgColor
+    }
+    override func mouseEntered(with event: NSEvent) { hovering = true; updateTitleColor(); needsDisplay = true }
+    override func mouseExited(with event: NSEvent) { hovering = false; updateTitleColor(); needsDisplay = true }
+
+    private func updateTitleColor() {
+        let p = NSMutableParagraphStyle(); p.alignment = .left; p.firstLineHeadIndent = 8
+        attributedTitle = NSAttributedString(string: title, attributes: [
+            .foregroundColor: hovering ? NSColor.selectedMenuItemTextColor : NSColor.labelColor,
+            .font: NSFont.systemFont(ofSize: 13),
+            .paragraphStyle: p,
+        ])
+    }
+}
+
 enum PopoverControlSelfTestError: Error, CustomStringConvertible {
     case failed(String)
 
@@ -393,9 +425,9 @@ extension PopoverViewController {
 
         setBPMText("120")
         nudgeUpButton.performClick(nil); spin()
-        try require(abs(engine.snapshot().tempo.bpm - 120.1) < 0.06, "nudge up changes BPM by +0.1")
+        try require(abs(engine.snapshot().tempo.bpm - 121.0) < 0.06, "nudge up changes BPM by +1")
         nudgeDownButton.performClick(nil); spin()
-        try require(abs(engine.snapshot().tempo.bpm - 120.0) < 0.06, "nudge down changes BPM by -0.1")
+        try require(abs(engine.snapshot().tempo.bpm - 120.0) < 0.06, "nudge down changes BPM by -1")
 
         setBPMText("333")
         try require(abs(engine.snapshot().tempo.bpm - 300.0) < 0.01, "typed BPM clamps high to 300")
