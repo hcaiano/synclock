@@ -248,8 +248,12 @@ final class PopoverViewController: NSViewController, NSTextFieldDelegate {
     private func footerButton(_ title: String, target: AnyObject?, action: Selector) -> NSButton {
         let b = NSButton(title: title, target: target, action: action)
         b.isBordered = false
-        b.font = .systemFont(ofSize: 12)
-        b.contentTintColor = Theme.inkSecondary
+        // contentTintColor doesn't reliably color a borderless button's title,
+        // which left these looking disabled-gray. Set the title color explicitly.
+        b.attributedTitle = NSAttributedString(string: title, attributes: [
+            .foregroundColor: Theme.ink,
+            .font: NSFont.systemFont(ofSize: 12),
+        ])
         return b
     }
 
@@ -301,9 +305,14 @@ final class PopoverViewController: NSViewController, NSTextFieldDelegate {
 
     // MARK: - Actions
 
-    @objc private func toggleTransport() { engine.toggle(); refresh() }
-    @objc private func nudgeUp() { engine.setTempo(engine.snapshot().tempo.nudged(by: 0.1)); refresh() }
-    @objc private func nudgeDown() { engine.setTempo(engine.snapshot().tempo.nudged(by: -0.1)); refresh() }
+    @objc private func toggleTransport() { endFieldEditing(); engine.toggle(); refresh() }
+    @objc private func nudgeUp() { endFieldEditing(); engine.setTempo(engine.snapshot().tempo.nudged(by: 0.1)); refresh() }
+    @objc private func nudgeDown() { endFieldEditing(); engine.setTempo(engine.snapshot().tempo.nudged(by: -0.1)); refresh() }
+
+    /// Clicking a borderless control doesn't end the BPM field's edit session,
+    /// so the refresh() "don't overwrite while editing" guard would hide the
+    /// change. Commit the typed value and resign first.
+    private func endFieldEditing() { if bpmField.isEditing { commitBPM() } }
     private func scrollTempo(_ dir: Int) {
         engine.setTempo(engine.snapshot().tempo.nudged(by: Double(dir))); refresh()
     }
@@ -312,6 +321,20 @@ final class PopoverViewController: NSViewController, NSTextFieldDelegate {
     }
     @objc private func bpmCommitted() { commitBPM() }
     func controlTextDidEndEditing(_ obj: Notification) { commitBPM() }
+    func controlTextDidChange(_ obj: Notification) {
+        // Number field: keep only digits and a single decimal point as you type.
+        guard (obj.object as? NSTextField) === bpmField else { return }
+        let s = bpmField.stringValue
+        var filtered = ""; var hasDot = false
+        for ch in s {
+            if ch.isNumber { filtered.append(ch) }
+            else if ch == "." && !hasDot { filtered.append(ch); hasDot = true }
+        }
+        if filtered != s {
+            bpmField.stringValue = filtered
+            bpmField.currentEditor()?.selectedRange = NSRange(location: filtered.count, length: 0)
+        }
+    }
     private func commitBPM() {
         guard !committingBPM else { return }
         committingBPM = true; defer { committingBPM = false }
