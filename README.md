@@ -16,7 +16,8 @@ menu bar and updates itself.
 ## What it does (v1)
 - Master **MIDI clock** (`0xF8` @ 24 PPQN) + transport (Start / Stop / Continue) to
   any connected gear and a named **virtual port**.
-- **Ableton Link** — Free / Follow / Lead, peer count, the active mode always visible.
+- **Ableton Link** — a single on/off toggle; when on, Synclock shares one tempo and
+  downbeat with every Link app and device on the network, with a live peer count.
 - **Works with any gear**: per-device enable, nickname, sync delay (ms),
   clock-vs-transport, live status. New devices default **off** for live safety.
 - Decimal BPM (30–300) + fine nudge + tap tempo.
@@ -26,8 +27,8 @@ menu bar and updates itself.
 For developers. Most people should just [download the app](#download). Requires Swift 5.9+ (macOS 13+).
 
 ```sh
-swift build            # builds the app + C-ABI Link bridge
-swift run SynclockApp  # launch the menubar agent
+swift build             # builds the app + C-ABI Link bridge
+swift run synclock      # launch the menubar agent
 swift run SynclockTests # dependency-free test runner
 ```
 
