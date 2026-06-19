@@ -52,6 +52,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         updaterController = SPUStandardUpdaterController(startingUpdater: true,
                                                         updaterDelegate: nil,
                                                         userDriverDelegate: nil)
+        PreferencesWindowController.checkForUpdates = { [weak self] in
+            self?.updaterController?.checkForUpdates(nil)
+        }
     }
 
     /// The locked app template glyph from the app bundle, falling back to an

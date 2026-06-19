@@ -8,6 +8,9 @@ import SynclockMIDI
 /// of its own anymore (it's a single on/off toggle in the popover), so its live
 /// status folds into General instead of a near-empty tab.
 final class PreferencesWindowController: NSWindowController {
+    /// Set by the app delegate so the About tab can trigger Sparkle.
+    static var checkForUpdates: (() -> Void)?
+
     private static var instance: PreferencesWindowController?
     static func shared(engine: SyncEngine?) -> PreferencesWindowController {
         if let instance { return instance }
@@ -22,7 +25,7 @@ final class PreferencesWindowController: NSWindowController {
     init(engine: SyncEngine?) {
         self.engine = engine
         self.devicesVC = DevicesViewController(engine: engine)
-        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 540, height: 440),
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 680, height: 460),
                               styleMask: [.titled, .closable, .miniaturizable],
                               backing: .buffered, defer: false)
         window.title = "Synclock Settings"
@@ -184,8 +187,8 @@ final class DevicesViewController: NSViewController, NSTableViewDataSource, NSTa
         header.translatesAutoresizingMaskIntoConstraints = false
 
         let cols: [(String, String, CGFloat)] = [
-            ("device", "Device", 200), ("status", "Status", 110),
-            ("enabled", "Clock", 52), ("delay", "Sync delay", 96), ("transport", "Transport", 70),
+            ("device", "Device", 224), ("status", "Status", 84),
+            ("enabled", "Clock", 54), ("delay", "Sync delay", 112), ("transport", "Transport", 86),
         ]
         for (id, name, w) in cols {
             let col = NSTableColumn(identifier: .init(id))
@@ -345,6 +348,11 @@ final class AboutViewController: NSViewController {
         let ver = NSTextField(labelWithString: "Version \(version)")
         ver.font = .systemFont(ofSize: 11); ver.textColor = .secondaryLabelColor
 
+        let updateButton = NSButton(title: "Check for Updates…", target: self,
+                                    action: #selector(checkForUpdates))
+        updateButton.bezelStyle = .rounded
+        updateButton.controlSize = .small
+
         let tagline = NSTextField(labelWithString: "Master MIDI clock + Ableton Link for macOS.")
         tagline.font = .systemFont(ofSize: 12); tagline.textColor = .secondaryLabelColor
 
@@ -358,11 +366,13 @@ final class AboutViewController: NSViewController {
         let license = NSTextField(labelWithString: "Free & open source · GPLv2-or-later · © 2026 Henrique Caiano")
         license.font = .systemFont(ofSize: 10); license.textColor = .tertiaryLabelColor
 
-        let stack = NSStackView(views: [icon, name, ver, tagline, links, license])
+        let stack = NSStackView(views: [icon, name, ver, updateButton, tagline, links, license])
         stack.orientation = .vertical
         stack.alignment = .centerX
         stack.spacing = 8
         stack.setCustomSpacing(4, after: name)
+        stack.setCustomSpacing(10, after: ver)
+        stack.setCustomSpacing(14, after: updateButton)
         stack.setCustomSpacing(14, after: tagline)
         stack.setCustomSpacing(18, after: links)
         stack.translatesAutoresizingMaskIntoConstraints = false
@@ -389,4 +399,6 @@ final class AboutViewController: NSViewController {
         guard let raw = s.identifier?.rawValue, let url = URL(string: raw) else { return }
         NSWorkspace.shared.open(url)
     }
+
+    @objc private func checkForUpdates() { PreferencesWindowController.checkForUpdates?() }
 }
