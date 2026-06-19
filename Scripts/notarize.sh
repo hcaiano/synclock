@@ -13,7 +13,8 @@ TARGET="${1:?usage: notarize.sh <app-or-dmg> [keychain-profile]}"
 PROFILE="${2:-${NOTARY_PROFILE:-synclock-notary}}"
 [ -e "$TARGET" ] || { echo "no such file: $TARGET" >&2; exit 1; }
 
-if ! codesign -dvvv "$TARGET" 2>&1 | grep -q 'Authority=Developer ID Application'; then
+CODESIGN_INFO="$(codesign -dvvv "$TARGET" 2>&1 || true)"
+if ! printf '%s\n' "$CODESIGN_INFO" | grep -q 'Authority=Developer ID Application'; then
   echo "error: $TARGET is not signed by a Developer ID Application identity; Apple will not notarize it." >&2
   echo "       Rebuild with IDENTITY=\"Developer ID Application: ...\" or DEVELOPER_ID_IDENTITY set." >&2
   exit 1
